@@ -1,5 +1,6 @@
 # https://gis.stackexchange.com/questions/198435/how-to-get-current-scale-of-a-leaflet-map
 # https://github.com/MarcChasse/leaflet.ScaleFactor
+# https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Resolution_and_Scale
 
 library(shiny)
 library(leaflet)
