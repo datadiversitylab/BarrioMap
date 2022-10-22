@@ -24,8 +24,9 @@ server <- function(input, output, session) {
                         x = map.getSize().x;
                         var maxMeters = map.containerPointToLatLng([0, y]).distanceTo( map.containerPointToLatLng([x,y]));
                         var MeterPerPixel = maxMeters/x ;
-                        var scale = L.control.scale().addTo(map);    
+                        var scale = L.control.scale();    
                         Shiny.onInputChange('maxMeters', MeterPerPixel*scale.options.maxWidth);
+                        console.log(MeterPerPixel*scale.options.maxWidth);   
                       });
         
                     this.on('mousemove', function(e) {
@@ -36,23 +37,19 @@ server <- function(input, output, session) {
                     });
                     
                     this.on('mouseout', function(e) {
-                        Shiny.onInputChange('hover_coordinates', null)
-                        Shiny.onInputChange('maxMeters', null)
-
+                        Shiny.onInputChange('hover_coordinates', ['...','...'] )
+                        Shiny.onInputChange('maxMeters', '...')
                     })
                 }"
       )
   })
   
   output$out <- renderText({
-    if(is.null(input$hover_coordinates)) {
-      "Mouse outside of map"
-    } else {
+ 
       paste0("Lat: ", input$hover_coordinates[1], 
              "\nLng: ", input$hover_coordinates[2],
              "\nTest: ", input$maxMeters
       )
-    }
   })
 }
 
