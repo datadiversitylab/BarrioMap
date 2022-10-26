@@ -1,6 +1,11 @@
 # https://gis.stackexchange.com/questions/198435/how-to-get-current-scale-of-a-leaflet-map
 # https://github.com/MarcChasse/leaflet.ScaleFactor
 # https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Resolution_and_Scale
+# https://generativelandscapes.wordpress.com/2014/09/18/2d-site-model-from-open-street-maps-example-20-1/
+# https://landarchbim.com/2015/12/01/elk-mapping-in-dynamo/
+# https://toolbox.decodingspaces.net/urban-simulation-with-grasshopper/
+# https://www.food4rhino.com/en/app/elk
+# https://blogs.uoregon.edu/222s16/2016/05/19/elk-2-openstreetmap-data-and-site-analysis/
 
 library(shiny)
 library(leaflet)
