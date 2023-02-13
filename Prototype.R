@@ -27,20 +27,21 @@ ui <- fluidPage(
 server <- function(input, output) {
   
   output$map <- renderLeaflet({
-    leaflet() %>% 
-      addTiles()  %>% 
+    leaflet(options = leafletOptions(zoomControl = FALSE)) %>% 
+      addTiles() %>%       # Add default OpenStreetMap map tiles 
+
       setView(lng = as.numeric(input$longitude) , lat = as.numeric(input$latitude) , zoom = input$scale) %>% 
-      addProviderTiles("OpenStreetMap") %>% 
-      addScaleBar(position = 'bottomleft') %>%
-      addLayersControl(overlayGroups = c(), options = layersControlOptions(collapsed = FALSE))
-  })
+      addProviderTiles("OpenStreetMap") %>%
+      addScaleBar(position = 'bottomleft')
+    })
+    
   
   observe({
     lat <- as.numeric(input$latitude)
     lng <- as.numeric(input$longitude)
     if (is.na(lat) || is.na(lng)) return()
     leafletProxy("map") %>%
-      setView(lng = lng , lat = lat, zoom = input$scale)
+    setView(lng = lng , lat = lat, zoom = input$scale)
   })
   
 }
