@@ -6,8 +6,8 @@ ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
       #input lat lng
-      textInput("latitude", "Latitude"),
-      textInput("longitude", "Longitude"),
+      textInput("latitude", "Latitude", value = 32.2540),
+      textInput("longitude", "Longitude", value = -110.9742),
       # Scale selection box
       selectInput("scale", "Select a scale:", 
                   c('1/8” = 1’0”' = 1/8,
