@@ -8,35 +8,48 @@
 
 server <- function(input, output, session) {
   
+  #Render the initial map
   output$map <- renderLeaflet({
-    leaflet(options = leafletOptions(zoomControl = FALSE)) %>% 
+    leaflet(options = leafletOptions(zoomControl = FALSE, 
+                                     zoomSnap = 0.01,
+                                     crs = leafletCRS(
+                                       scales = 1
+                                     )
+    )) %>% 
       addTiles() %>%
       addProviderTiles("OpenStreetMap") %>%
-      addScaleBar(position = 'bottomleft')
+      addScaleBar(position = 'bottomleft') %>%
+      setView(lng = input$longitude, lat = input$latitude, zoom = 5)
   })
   
   observe({
     
     lat <- as.numeric(input$latitude)
     lng <- as.numeric(input$longitude)
+    updateNumericInput(session = session,
+                       inputId = "longitude",
+                       value = input$map_center$lng)
+    updateNumericInput(session = session,
+                       inputId = "latitude",
+                       value = input$map_center$lat)
+    
+    ## Value of the scale in meters/px
     scale <- input$scale
-    if (input$scale == "custom") {
-      scale <- as.numeric(input$custom_scale)
-    }
+
+    ## Get the zoom level for a given number of meters
+    zl = log2(( 40075016.686 * abs(cos(input$map_center$lat * pi/180)))/input$scale) - 8
+    output$scaleL <- renderText({ paste("Testing:", round(metesrPerPixel, 5), "m/pixel" ) })
+    
+    ## Get the meters for a given map
+    metesrPerPixel = 40075016.686 * abs(cos(input$map_center$lat * pi/180)) / 2^(input$map_zoom+8)
+    output$zoomL <- renderText({ paste("Testing:", round(zl, 5), "Zoom level" ) })
+    
+    #Render the new map
     isolate({
     leafletProxy("map") %>%
-      setView(lng = lng, lat = lat, zoom = scale)
+      setView(lng = lng, lat = lat, zoom = zl)
     })
   })
   
-  #Update the numeric input when the user moves the map around
-  observe({
-    updateNumericInputIcon(session = session,
-                           inputId = "longitude",
-                           value = input$map_center$lng)
-    updateNumericInputIcon(session = session,
-                           inputId = "latitude",
-                           value = input$map_center$lat)
-  })
   
 }
