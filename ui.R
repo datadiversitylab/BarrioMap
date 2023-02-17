@@ -21,7 +21,7 @@ ui <- fluidPage(
       textOutput("zoomL")
     ),
     mainPanel(
-      leafletOutput("map")
+      leafletOutput("map", height = "500px", width = "100%")
     )
   )
 )
