@@ -15,7 +15,7 @@ server <- function(input, output, session) {
                                      crs = leafletCRS(
                                        scales = 1
                                      )
-    )) %>% 
+    ))%>% 
       addTiles() %>%
       addProviderTiles("OpenStreetMap") %>%
       addScaleBar(position = 'bottomleft') %>%
@@ -49,7 +49,8 @@ server <- function(input, output, session) {
     #Render the new map
     isolate({
       leafletProxy("map") %>%
-        setView(lng = lng, lat = lat, zoom = zl)
+        setView(lng = lng, lat = lat, zoom = zl) %>% 
+        leaflet(options = leafletOptions(minZoom = zl, maxZoom = zl))
     })
   })
   
