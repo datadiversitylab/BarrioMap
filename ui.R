@@ -28,6 +28,7 @@ ui <- fluidPage(
       actionButton("locate", "Locate"),
       
 
+
     ),
     mainPanel(
       leafletOutput("map", height = "500px", width = "100%")
