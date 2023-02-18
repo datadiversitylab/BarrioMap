@@ -8,6 +8,12 @@
 
 server <- function(input, output, session) {
   
+
+  
+  # Reactive values for latitude and longitude
+  rv <- reactiveValues(latitude = 0 , longitude = 0)
+  
+  
   #Render the initial map
   output$map <- renderLeaflet({
     leaflet(options = leafletOptions(zoomControl = FALSE, 
@@ -18,8 +24,9 @@ server <- function(input, output, session) {
     ))%>% 
       addTiles() %>%
       addProviderTiles("OpenStreetMap") %>%
-      addScaleBar(position = 'bottomleft') %>%
-    setView(lng = input$longitude, lat = input$latitude, zoom = 5)
+      addScaleBar(position = 'bottomleft') 
+    #%>%
+    #setView(lng = input$longitude, lat = input$latitude, zoom = 5)
   })
   
   
@@ -32,7 +39,11 @@ server <- function(input, output, session) {
                        value = input$map_center$lat)
   })
   
-  observe({
+
+  
+  
+  observeEvent(input$locate, { 
+    
     ## Value of the scale in meters/px
     scale <- input$scale
     ## Get the zoom level for a given number of meters
@@ -43,15 +54,14 @@ server <- function(input, output, session) {
     metesrPerPixel = 40075016.686 * abs(cos(input$map_center$lat * pi/180)) / 2^(input$map_zoom+8)
     output$zoomL <- renderText({ paste("Testing:", round(zl, 5), "Zoom level" ) })
  
-    lat <- as.numeric(input$latitude)
-    lng <- as.numeric(input$longitude)
+    rv$lat <- as.numeric(input$latitude)
+    rv$lng <- as.numeric(input$longitude)
     
     #Render the new map
     isolate({
       leafletProxy("map") %>%
-        setView(lng = lng, lat = lat, zoom = zl) %>% 
-        leaflet(options = leafletOptions(minZoom = zl, maxZoom = zl))
-    })
+        setView(lng = rv$lng, lat = rv$lat, zoom = zl) %>% 
+        leaflet(options = leafletOptions(minZoom = zl, maxZoom = zl)) })
   })
   
   
