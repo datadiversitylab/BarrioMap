@@ -6,6 +6,9 @@
 ###################
 
 library(dplyr)
+library(leaflet)
+library(leaflet.extras)
+
 
 server <- function(input, output, session) {
   
