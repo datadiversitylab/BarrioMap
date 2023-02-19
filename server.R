@@ -9,7 +9,7 @@
 server <- function(input, output, session) {
   
   #Render the initial map
-  output$map <- renderLeaflet({
+  output$map <- leaflet::renderLeaflet({
     leaflet(options = leafletOptions(zoomControl = FALSE, 
                                      zoomSnap = 0.01,
                                      crs = leafletCRS(
