@@ -15,7 +15,7 @@ server <- function(input, output, session) {
                                      crs = leafletCRS(
                                        scales = 1
                                      )
-    ))%>% 
+    )) %>% 
       addTiles() %>%
       addProviderTiles("OpenStreetMap") %>%
       addScaleBar(position = 'bottomleft') %>%
@@ -43,9 +43,9 @@ server <- function(input, output, session) {
     metesrPerPixel = 40075016.686 * abs(cos(input$map_center$lat * pi/180)) / 2^(input$map_zoom+8)
     output$zoomL <- renderText({ paste("Testing:", round(zl, 5), "Zoom level" ) })
     
-    lat <- as.numeric(input$latitude)
-    lng <- as.numeric(input$longitude)
-    
+    lat <- input$latitude
+    lng <- input$longitude
+
     #Render the new map
     isolate({
       leafletProxy("map") %>%
