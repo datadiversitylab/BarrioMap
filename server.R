@@ -14,7 +14,8 @@ server <- function(input, output, session) {
                                      zoomSnap = 0.01,
                                      crs = leafletCRS(
                                        scales = 1
-                                     )
+                                     ),
+                                     attributionControl=FALSE
     )) %>% 
       addTiles() %>%
       addProviderTiles("OpenStreetMap") %>%
