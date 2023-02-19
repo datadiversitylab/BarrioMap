@@ -29,7 +29,7 @@ ui <- navbarPage("ComMappeR",
                               textOutput("zoomL")
                             ),
                             mainPanel(
-                              leafletOutput("map", height = "500px", width = "100%")
+                              leaflet::leafletOutput("map", height = "500px", width = "100%")
                             )
                           )),
                  tabPanel("About us",
