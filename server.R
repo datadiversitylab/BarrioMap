@@ -62,7 +62,7 @@ server <- function(input, output, session) {
       leafletProxy("map") %>%
         setView(lng = lng, lat = lat, zoom = zl) %>% 
         leaflet(options = leafletOptions(minZoom = zl, maxZoom = zl)) %>% 
-        activateGPS()
+        leaflet.extras::activateGPS()
     })
   })
   
