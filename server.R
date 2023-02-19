@@ -11,10 +11,11 @@ server <- function(input, output, session) {
   #Render the initial map
   output$map <- renderLeaflet({
     leaflet(options = leafletOptions(zoomControl = FALSE, 
-                                     zoomSnap = 0.01,
+                                     zoomSnap = 0.001,
                                      crs = leafletCRS(
                                        scales = 1
-                                     )
+                                     ),
+                                     attributionControl=FALSE
     )) %>% 
       addTiles() %>%
       addProviderTiles("OpenStreetMap") %>%

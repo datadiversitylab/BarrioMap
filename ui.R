@@ -6,7 +6,7 @@
 ###################
 
 ui <- navbarPage("ComMappeR",
-                 theme = bs_theme(version = 4, bootswatch = "minty"), #https://bootswatch.com/
+                 theme = bslib::bs_theme(version = 4, bootswatch = "minty"), #https://bootswatch.com/
                  tabPanel("Welcome",
                           br(),
                           h4("Welcome to ComMappeR!", align = "center"),
