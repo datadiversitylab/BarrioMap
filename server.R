@@ -15,12 +15,21 @@ server <- function(input, output, session) {
                                      crs = leafletCRS(
                                        scales = 1
                                      )
-    ))%>% 
+    )) %>% 
       addTiles() %>%
       addProviderTiles("OpenStreetMap") %>%
       addScaleBar(position = 'bottomleft') %>%
-      setView(lng = input$longitude, lat = input$latitude, zoom = 5)
-  })
+      setView(lng = input$longitude, lat = input$latitude, zoom = 5)%>%
+      addControlGPS(
+        options = gpsOptions(
+          position = "topright",
+          activate = TRUE, 
+          autoCenter = TRUE,
+          setView = TRUE)) 
+    
+    #non-functional
+    #%>% addSearchOSM(options = searchOptions(autoCollapse = FALSE, minLength = 2))
+  }) 
   
   
   observe({
@@ -43,14 +52,15 @@ server <- function(input, output, session) {
     metesrPerPixel = 40075016.686 * abs(cos(input$map_center$lat * pi/180)) / 2^(input$map_zoom+8)
     output$zoomL <- renderText({ paste("Testing:", round(zl, 5), "Zoom level" ) })
     
-    lat <- as.numeric(input$latitude)
-    lng <- as.numeric(input$longitude)
-    
+    lat <- input$latitude
+    lng <- input$longitude
+
     #Render the new map
     isolate({
       leafletProxy("map") %>%
         setView(lng = lng, lat = lat, zoom = zl) %>% 
-        leaflet(options = leafletOptions(minZoom = zl, maxZoom = zl))
+        leaflet(options = leafletOptions(minZoom = zl, maxZoom = zl)) %>% 
+        activateGPS()
     })
   })
   
