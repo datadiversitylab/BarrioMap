@@ -5,6 +5,8 @@
 # Used to define the back-end aspects of the app.
 ###################
 
+library(dplyr)
+
 server <- function(input, output, session) {
   
   #Render the initial map
