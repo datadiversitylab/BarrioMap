@@ -19,8 +19,17 @@ server <- function(input, output, session) {
       addTiles() %>%
       addProviderTiles("OpenStreetMap") %>%
       addScaleBar(position = 'bottomleft') %>%
-      setView(lng = input$longitude, lat = input$latitude, zoom = 5)
-  })
+      setView(lng = input$longitude, lat = input$latitude, zoom = 5)%>%
+      addControlGPS(
+        options = gpsOptions(
+          position = "topright",
+          activate = TRUE, 
+          autoCenter = TRUE,
+          setView = TRUE)) 
+    
+    #non-functional
+    #%>% addSearchOSM(options = searchOptions(autoCollapse = FALSE, minLength = 2))
+  }) 
   
   
   observe({
@@ -50,7 +59,8 @@ server <- function(input, output, session) {
     isolate({
       leafletProxy("map") %>%
         setView(lng = lng, lat = lat, zoom = zl) %>% 
-        leaflet(options = leafletOptions(minZoom = zl, maxZoom = zl))
+        leaflet(options = leafletOptions(minZoom = zl, maxZoom = zl)) %>% 
+        activateGPS()
     })
   })
   
