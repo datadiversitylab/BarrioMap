@@ -57,7 +57,7 @@ server <- function(input, output, session) {
     lng <- input$longitude
 
     #Render the new map
-    isolate({
+    shiny::isolate({
       leafletProxy("map") %>%
         setView(lng = lng, lat = lat, zoom = zl) %>% 
         leaflet(options = leafletOptions(minZoom = zl, maxZoom = zl)) %>% 

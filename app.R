@@ -3,6 +3,7 @@ library(shiny)
 library(leaflet)
 library(leaflet.extras)
 library(bslib)
+library(magrittr)
 
 #Load components
 source('ui.R')
