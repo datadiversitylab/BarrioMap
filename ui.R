@@ -18,15 +18,18 @@ ui <- navbarPage("ComMappeR",
                           sidebarLayout(
                             sidebarPanel(
                               #input lat lng
-                              numericInput("latitude", "Latitude", value = 32.2540),
-                              numericInput("longitude", "Longitude", value = -110.9742),
+                              textInput("latitude", "Latitude"),   #removed lat long default
+                              textInput("longitude", "Longitude"), #changed data type from numeric to text
                               
                               # Scale selection box
                               numericInput("scale", "m/px", 10, min = 1, max = 160000),
                               
                               #Some text in the app for testing
                               textOutput("scaleL"),
-                              textOutput("zoomL")
+                              textOutput("zoomL"),
+                              
+                              #button
+                              actionButton("refresh", "Refresh"),
                             ),
                             mainPanel(
                               leaflet::leafletOutput("map", height = "500px", width = "100%")
