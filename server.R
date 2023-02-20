@@ -25,7 +25,7 @@ server <- function(input, output, session) {
                                      attributionControl=FALSE
     )) %>% 
       addTiles() %>%
-      addProviderTiles("OpenStreetMap") %>%
+      addProviderTiles(providers$Stamen.Toner) %>%
       addScaleBar(position = 'bottomleft') %>%
       setView(lng = -110.9742, lat = 32.2540, zoom = 5)%>%
       addControlGPS(
