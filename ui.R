@@ -18,8 +18,8 @@ ui <- navbarPage("ComMappeR",
                           sidebarLayout(
                             sidebarPanel(
                               #input lat lng
-                              textInput("latitude", "Latitude"),   #removed lat long default
-                              textInput("longitude", "Longitude"), #changed data type from numeric to text
+                              numericInput("latitude", "Latitude", value= 0),   #removed lat long default
+                              numericInput("longitude", "Longitude", value= 0), 
                               
                               # Scale selection box
                               numericInput("scale", "m/px", 10, min = 1, max = 160000),
