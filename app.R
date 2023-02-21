@@ -4,6 +4,7 @@ library(leaflet)
 library(leaflet.extras)
 library(bslib)
 library(dplyr)
+library(shinyjs)
 
 
 #Load components

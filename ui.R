@@ -17,6 +17,8 @@ ui <- navbarPage("ComMappeR",
                  tabPanel("Create your map!",
                           sidebarLayout(
                             sidebarPanel(
+                              shinyjs::useShinyjs(),
+                              checkboxInput("usecoordinates", "Define coordinates?", TRUE),
                               #input lat lng
                               numericInput("latitude", "Latitude", value= 0),   #removed lat long default
                               numericInput("longitude", "Longitude", value= 0), 

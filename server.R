@@ -8,7 +8,7 @@
 library(dplyr)
 library(leaflet)
 library(leaflet.extras)
-
+library(shinyjs)
 
 server <- function(input, output, session) {
   
@@ -17,6 +17,7 @@ server <- function(input, output, session) {
   
   #Render the initial map
   output$map <- leaflet::renderLeaflet({
+    if(input$usecoordinates){
     leaflet(options = leafletOptions(zoomControl = FALSE, 
                                      zoomSnap = 0.01,
                                      crs = leafletCRS(
@@ -27,17 +28,45 @@ server <- function(input, output, session) {
       addTiles() %>%
       addProviderTiles(providers$Stamen.Toner) %>%
       addScaleBar(position = 'bottomleft') %>%
-      setView(lng = -110.9742, lat = 32.2540, zoom = 5)%>%
+      setView(lng = -110.9742, lat = 32.2540, zoom = 5) %>%
       addControlGPS(
         options = gpsOptions(
           position = "topright",
           activate = TRUE, 
           autoCenter = TRUE,
-          setView = TRUE)) 
-    
-    #non-functional
-    #%>% addSearchOSM(options = searchOptions(autoCollapse = FALSE, minLength = 2))
+          setView = TRUE))
+    }else{
+      leaflet(options = leafletOptions(zoomControl = FALSE, 
+                                       zoomSnap = 0.01,
+                                       crs = leafletCRS(
+                                         scales = 1
+                                       ),
+                                       attributionControl=FALSE
+      )) %>% 
+        addTiles() %>%
+        addProviderTiles(providers$Stamen.Toner) %>%
+        addScaleBar(position = 'bottomleft') %>%
+        setView(lng = -110.9742, lat = 32.2540, zoom = 5) %>%
+        addControlGPS(
+          options = gpsOptions(
+            position = "topright",
+            activate = TRUE, 
+            autoCenter = TRUE,
+            setView = TRUE))%>% 
+        addSearchOSM(options = searchOptions(autoCollapse = FALSE, minLength = 2))
+    }
   }) 
+  
+  observeEvent(input$usecoordinates,{
+    if(input$usecoordinates == FALSE){
+      shinyjs::disable("longitude")
+      shinyjs::disable("latitude")
+      
+    }else{
+      shinyjs::enable("longitude")
+      shinyjs::enable("latitude")
+    }
+  })
   
   
   observe({
