@@ -20,15 +20,22 @@ ui <- navbarPage("ComMappeR",
                               shinyjs::useShinyjs(),
                               checkboxInput("usecoordinates", "Define coordinates?", TRUE),
                               #input lat lng
-                              numericInput("latitude", "Latitude", value= 0),   #removed lat long default
-                              numericInput("longitude", "Longitude", value= 0), 
+                              numericInput("latitude", "Latitude", value = 0),
+                              numericInput("longitude", "Longitude", value = 0), 
+                              numericInput("dpi", "DPI", value = 150), 
                               
                               # Scale selection box
-                              numericInput("scale", "m/px", 10, min = 1, max = 160000),
-                              
+                              selectInput("scale", "Define scale (1:x m)", 
+                                          choices = c("1:5,840" = 5840, 
+                                                      "1:600" = 600,
+                                                      "1:384" = 384
+                                                      )
+                                          ),
+
                               #Some text in the app for testing
-                              textOutput("scaleL"),
                               textOutput("zoomL"),
+                              textOutput("resolutionL"),
+                              textOutput("scaleL"),
                               
                               #button
                               actionButton("refresh", "Refresh"),

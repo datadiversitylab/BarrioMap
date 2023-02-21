@@ -19,14 +19,14 @@ server <- function(input, output, session) {
   output$map <- leaflet::renderLeaflet({
     if(input$usecoordinates){
     leaflet(options = leafletOptions(zoomControl = FALSE, 
-                                     zoomSnap = 0.01,
+                                     zoomSnap = 0.001,
                                      crs = leafletCRS(
                                        scales = 1
                                      ),
                                      attributionControl=FALSE
     )) %>% 
       addTiles() %>%
-      addProviderTiles(providers$Stamen.Toner) %>%
+      #addProviderTiles(providers$Stamen.TonerLines) %>%
       addScaleBar(position = 'bottomleft') %>%
       setView(lng = -110.9742, lat = 32.2540, zoom = 5) %>%
       addControlGPS(
@@ -37,14 +37,14 @@ server <- function(input, output, session) {
           setView = TRUE))
     }else{
       leaflet(options = leafletOptions(zoomControl = FALSE, 
-                                       zoomSnap = 0.01,
+                                       zoomSnap = 0.001,
                                        crs = leafletCRS(
                                          scales = 1
                                        ),
                                        attributionControl=FALSE
       )) %>% 
         addTiles() %>%
-        addProviderTiles(providers$Stamen.Toner) %>%
+        #addProviderTiles(providers$Stamen.TonerLines) %>%
         addScaleBar(position = 'bottomleft') %>%
         setView(lng = -110.9742, lat = 32.2540, zoom = 5) %>%
         addControlGPS(
@@ -79,15 +79,24 @@ server <- function(input, output, session) {
   })
   
   observeEvent(input$refresh, {
-    ## Value of the scale in meters/px
-    scale <- input$scale
-    ## Get the zoom level for a given number of meters
-    zl = log2(( 40075016.686 * abs(cos(input$map_center$lat * pi/180)))/input$scale) - 8
-    output$scaleL <- renderText({ paste("Testing:", round(metesrPerPixel, 5), "m/pixel" ) })
     
-    ## Get the meters for a given map
-    metesrPerPixel = 40075016.686 * abs(cos(input$map_center$lat * pi/180)) / 2^(input$map_zoom+8)
-    output$zoomL <- renderText({ paste("Testing:", round(zl, 5), "Zoom level" ) })
+    ## Estimate the zoom level for a given scale
+    zl = log2(input$dpi * 1/0.0254 * 156543.03 * cos(input$map_center$lat) / as.numeric(input$scale) )
+    
+    ## Get the meters for a given map 
+    levelofZoomEst = log2(( 40075016.686 * abs(cos(input$map_center$lat * pi/180)))/zl) - 8
+    #output$zoomEL <- renderText({ paste("Zoom level (estimated) = ", round(levelofZoomEst, 5)) })
+    output$zoomL <- renderText({ paste("Zoom level = ", round(zl, 5)) })
+    
+    ## Get the resolution
+    resolution = 156543.03 * cos(input$map_center$lat) / (2 ^ input$map_zoom)
+    output$resolutionL <- renderText({ paste("Resolution = ", round(resolution, 5), "m/pixel" ) })
+    
+    ## Get the scale
+    scale = (input$dpi * 1/0.0254* resolution) * cos(input$map_center$lat)
+    output$scaleL <- renderText({ paste0("Scale = 1:", round(scale, 3) ) })
+    output$scaleL <- renderText({ paste0("1 screen cm is ", round(scale/10, 3), " m" ) })
+    
     
     rv$lat <- as.numeric(input$latitude)
     rv$lng <- as.numeric(input$longitude)
