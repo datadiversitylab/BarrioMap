@@ -1,4 +1,4 @@
-## Get the scale (https://wiki.openstreetmap.org/wiki/Zoom_levels)
+## Get the scale (m/px)
 lat = 0
 zoom = 0
 metresPerPixel = 40075016.686 * abs(cos(lat * pi/180)) / 2^(zoom+8)
@@ -8,7 +8,7 @@ sp = 156543
 lat = 0
 zoomLevel = log2(( 40075016.686 * abs(cos(lat * pi/180)))/sp) - 8
 
-## Get the resolution for a zoom level (for the scale)
+## Get the resolution for a zoom level (for the scale; m/px)
 zoom = 0
 lat = 0
 resolution = 156543.03 * cos(lat) / (2 ^ zoom)
