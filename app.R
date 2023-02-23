@@ -4,6 +4,8 @@ library(leaflet)
 library(leaflet.extras)
 library(bslib)
 library(dplyr)
+library(mapview)
+library(webshot)
 
 
 #Load components

@@ -30,6 +30,26 @@ ui <- navbarPage("ComMappeR",
                               
                               #button
                               actionButton("refresh", "Refresh"),
+                              
+                              # js to get width/height of map div
+                              tags$head(tags$script('
+                        var dimension = [0, 0];
+                        $(document).on("shiny:connected", function(e) {
+                        dimension[0] = document.getElementById("map").clientWidth;
+                        dimension[1] = document.getElementById("map").clientHeight;
+                        Shiny.onInputChange("dimension", dimension);
+                        });
+                        $(window).resize(function(e) {
+                        dimension[0] = document.getElementById("map").clientWidth;
+                        dimension[1] = document.getElementById("map").clientHeight;
+                        Shiny.onInputChange("dimension", dimension);
+                        });
+                        ')),
+                              
+                              
+                              #page size and screenshot
+                              selectInput("pagesize", "Page Size:", choices = c("A4", "Letter"), selected = "A4"),
+                              downloadButton("dl", "Screenshot")
                             ),
                             mainPanel(
                               leaflet::leafletOutput("map", height = "500px", width = "100%")
@@ -46,6 +66,9 @@ ui <- navbarPage("ComMappeR",
                  navbarMenu("More",
                             tabPanel("GitHub"),
                             tabPanel("Additional resources"))
+                 
+                 
+                
 )
 
 

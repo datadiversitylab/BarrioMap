@@ -7,6 +7,7 @@
 
 library(dplyr)
 library(leaflet)
+library(mapview)
 library(leaflet.extras)
 
 
@@ -68,9 +69,42 @@ server <- function(input, output, session) {
       leafletProxy("map") %>%
         setView(lng = rv$lng, lat = rv$lat, zoom = zl) %>% 
         leaflet(options = leafletOptions(minZoom = zl, maxZoom = zl)) %>% 
-        leaflet.extras::activateGPS()
-    })
-  })
+        leaflet.extras::activateGPS() })
   
+    })
+  
+  # define function to get page size dimensions
+  getPageSize <- function(pageSize) {
+    if (pageSize == "A4") {
+     return(c(width = 2480, height = 3508))
+    } else {
+      return(c(width = 2550, height = 3300))
+    }
+  }
+  
+  # create download
+
+  
+    
+  output$dl <- downloadHandler(
+    filename = "map.png",
+    
+    content = function(file) {
+      pageSize <- input$pagesize
+      pageDims <- getPageSize(pageSize)
+      mapshot("map", 
+        file = file,
+        vwidth = pageDims[1], 
+        vheight = pageDims[2],
+        dpi = 300,
+        orientation="landscape")})
+  
+  
+  
+
+
+  
+  
+ 
   
 }
