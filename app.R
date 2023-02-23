@@ -6,6 +6,7 @@ library(bslib)
 library(dplyr)
 library(mapview)
 library(webshot)
+library(shinyjs)
 
 
 #Load components
