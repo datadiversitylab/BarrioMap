@@ -7,6 +7,7 @@ library(dplyr)
 library(mapview)
 library(webshot)
 library(shinyjs)
+library(htmlwidgets)
 
 
 #Load components

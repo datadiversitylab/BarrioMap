@@ -124,18 +124,20 @@ server <- function(input, output, session) {
     # Update the output with the new map
     output$map <- renderLeaflet({rv$map})
 
-    
+    print(zl)
+    print(rv$lat)
+    print(rv$lng)
     
     # define function to get page size dimensions
     getPageSize <- function(pageSize) {
       if (pageSize == "A4") {
-        return(c(width = 3508, height = 2480))
+        return(c(width = 2480, height = 3508))
       } else {
-        return(c(width = 3300, height = 2550))
+        return(c(width = 2550, height = 3300))
       }
     }
     
-    # create download
+    # create download pdf
     
     
     
@@ -145,21 +147,43 @@ server <- function(input, output, session) {
       content = function(file) {
         pageSize <- input$pagesize
         pageDims <- getPageSize(pageSize)
-        mapshot(rv$map, 
-                file = file,
-                vwidth = pageDims[1], 
-                vheight = pageDims[2],
+        mapshot( rv$map, 
+                file = file,                
                 
-                #orientation="landscape"
+#                vwidth = pageDims[1], 
+#                vheight = pageDims[2]
+#                ,
+                cliprect = "viewport"
+            
                 )})
     
-    
+
     
     
         })
-  
-
-  
+  # create download png
+  output$dl2 <- downloadHandler(
+    filename = "map.png",
+    
+    content = function(file) {
+      pageSize <- input$pagesize
+      pageDims <- getPageSize(pageSize)
+      mapshot( rv$map,
+               file = file,
+               delay=2)})
+               
+  # create download html
+  output$dl3 <- downloadHandler(
+    filename = "map.html",
+    
+    content = function(file) {
+      pageSize <- input$pagesize
+      pageDims <- getPageSize(pageSize)
+#      print(zl)
+      print(rv$lat)
+      print(rv$lng)
+      
+    saveWidget(rv$map, file=file)})
   
 
   
