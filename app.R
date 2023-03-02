@@ -7,8 +7,15 @@ library(dplyr)
 library(mapview)
 library(webshot)
 library(shinyjs)
+<<<<<<< Updated upstream
 library(htmlwidgets)
 
+=======
+library(mapview)
+webshot::install_phantomjs()
+library(webshot2)
+library(htmlwidgets)
+>>>>>>> Stashed changes
 
 #Load components
 source('ui.R')

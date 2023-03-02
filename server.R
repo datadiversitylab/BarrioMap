@@ -10,6 +10,11 @@ library(leaflet)
 library(mapview)
 library(leaflet.extras)
 library(shinyjs)
+library(htmlwidgets)
+library(mapview)
+library(webshot)
+library(webshot2)
+webshot::install_phantomjs()
 
 server <- function(input, output, session) {
   
@@ -55,11 +60,17 @@ server <- function(input, output, session) {
             autoCenter = TRUE,
             setView = TRUE))%>% 
         addSearchOSM(options = searchOptions(autoCollapse = FALSE, minLength = 2))
+<<<<<<< Updated upstream
     } %>%    #edit#
       {rv$map <- .} 
   })
   
   
+=======
+    } %>%    
+      {rv$map <- .}
+  }) 
+>>>>>>> Stashed changes
   
   observeEvent(input$usecoordinates,{
     if(input$usecoordinates == FALSE){
@@ -110,12 +121,20 @@ server <- function(input, output, session) {
 #      leafletProxy("map") %>%
 #        setView(lng = rv$lng, lat = rv$lat, zoom = zl) %>% 
 #        leaflet(options = leafletOptions(minZoom = zl, maxZoom = zl)) %>% 
+<<<<<<< Updated upstream
 #        leaflet.extras::activateGPS() })
   
     
     
     # Render a new map and store it in the reactive value
     rv$map <- leaflet(options = leafletOptions(minZoom = zl, maxZoom = zl)) %>%
+=======
+#        leaflet.extras::activateGPS()
+#    })
+    
+    # Render a new map and store it in the reactive value
+    rv$map <- leaflet(options = leafletOptions(minZoom = zl, maxZoom = zl, attributionControl=FALSE)) %>%
+>>>>>>> Stashed changes
       addTiles() %>%
       addProviderTiles("OpenStreetMap") %>%
       addScaleBar(position = 'bottomleft') %>%
@@ -123,6 +142,7 @@ server <- function(input, output, session) {
     
     # Update the output with the new map
     output$map <- renderLeaflet({rv$map})
+<<<<<<< Updated upstream
 
 #    print(zl)
 #    print(rv$lat)
@@ -136,6 +156,10 @@ server <- function(input, output, session) {
         return(c(width = 2550, height = 3300))
       }
     }
+=======
+    
+
+>>>>>>> Stashed changes
     
     # create download pdf
     
@@ -145,6 +169,7 @@ server <- function(input, output, session) {
       filename = "map.pdf",
       
       content = function(file) {
+<<<<<<< Updated upstream
 #        pageSize <- input$pagesize
 #        pageDims <- getPageSize(pageSize)
         mapshot( rv$map, 
@@ -186,6 +211,63 @@ server <- function(input, output, session) {
     saveWidget(rv$map, file=file)})
   
 
+=======
+
+        mapshot( rv$map, 
+                 file = file,                
+                 
+                 #                vwidth = pageDims[1], 
+                 #                vheight = pageDims[2],
+                 vwidth = input$dimension[1], 
+                 vheight = input$dimension[2]
+                 #               cliprect = "viewport"
+                 
+        )
+        
+        
+      }
+    )
+    
+    
+    
+    
+  })
+>>>>>>> Stashed changes
+  
+  # define function to get page size dimensions
+  getPageSize <- function(pageSize) {
+    if (pageSize == "A4") {
+      return(c(width = 2480, height = 3508))
+    } else {
+      return(c(width = 2550, height = 3300))
+    }
+  }
+  
+  
+  # create download png
+  output$dl2 <- downloadHandler(
+    filename = "map.png",
+    
+    content = function(file) {
+      pageSize <- input$pagesize
+      pageDims <- getPageSize(pageSize)
+      mapshot( rv$map,
+               file = file)})
+  
+  # create download html
+  output$dl3 <- downloadHandler(
+    filename = "map.html",
+    
+    content = function(file) {
+      pageSize <- input$pagesize
+      pageDims <- getPageSize(pageSize)
+      #      print(zl)
+      #      print(rv$lat)
+      #      print(rv$lng)
+      
+      saveWidget(rv$map, file=file)})
+  
+  
   
   
 }

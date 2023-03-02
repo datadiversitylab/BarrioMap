@@ -61,6 +61,10 @@ ui <- navbarPage("ComMappeR",
                               downloadButton("dl", "Export PDF"),
                               downloadButton("dl2", "Export PNG"),
                               downloadButton("dl3", "Export HTML")
+<<<<<<< Updated upstream
+=======
+                              
+>>>>>>> Stashed changes
                             ),
                             mainPanel(
                               leaflet::leafletOutput("map", height = "500px", width = "100%")
