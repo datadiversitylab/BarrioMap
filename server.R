@@ -101,10 +101,24 @@ server <- function(input, output, session) {
     rv$lat <- as.numeric(input$latitude)
     rv$lng <- as.numeric(input$longitude)
 
+    ## Estimate the bounding box (for testing)
+    
+    lng1=input$map_bounds[[2]] #east
+    lat1=input$map_bounds[[1]] #north
+    lng2=input$map_bounds[[4]] #west
+    lat2=input$map_bounds[[3]] #south
+    
+    ##Remeber: A4:2480 x 3508 pixels
+    
     #Render the new map
     shiny::isolate({
       leafletProxy("map") %>%
-        setView(lng = rv$lng, lat = rv$lat, zoom = zl) %>% 
+        setView(lng = rv$lng, lat = rv$lat, zoom = zl) %>%
+        addRectangles(
+          lng1=lng1, lat1=lat1,
+          lng2=lng2, lat2=lat2,
+          fillColor = "transparent"
+        ) %>% 
         leaflet(options = leafletOptions(minZoom = zl, maxZoom = zl)) %>% 
         leaflet.extras::activateGPS()
     })
