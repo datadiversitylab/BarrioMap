@@ -9,6 +9,7 @@ library(dplyr)
 library(leaflet)
 library(leaflet.extras)
 library(shinyjs)
+library(mapview)
 
 server <- function(input, output, session) {
   
@@ -102,13 +103,88 @@ server <- function(input, output, session) {
     rv$lng <- as.numeric(input$longitude)
 
     #Render the new map
-    shiny::isolate({
-      leafletProxy("map") %>%
-        setView(lng = rv$lng, lat = rv$lat, zoom = zl) %>% 
-        leaflet(options = leafletOptions(minZoom = zl, maxZoom = zl)) %>% 
-        leaflet.extras::activateGPS()
-    })
+#    shiny::isolate({
+#      leafletProxy("map") %>%
+#        setView(lng = rv$lng, lat = rv$lat, zoom = zl) %>% 
+#        leaflet(options = leafletOptions(minZoom = zl, maxZoom = zl)) %>% 
+#        leaflet.extras::activateGPS()
+#    })
+    
+    
+    # Render a new map and store it in the reactive value
+    rv$map <- leaflet(options = leafletOptions(minZoom = zl, maxZoom = zl, attributionControl=FALSE)) %>%
+      addTiles() %>%
+      addProviderTiles("OpenStreetMap") %>%
+      addScaleBar(position = 'bottomleft') %>%
+      setView(lng = rv$lng, lat = rv$lat, zoom = zl)
+    
+    # Update the output with the new map
+    output$map <- renderLeaflet({rv$map})
+  
+    
+
+    # create download pdf
+    
+    
+    
+    output$dl <- downloadHandler(
+      filename = "map.pdf",
+      
+      content = function(file) {
+        #        pageSize <- input$pagesize
+        #        pageDims <- getPageSize(pageSize)
+        mapshot( rv$map, 
+                 file = file,                
+                 
+                 #                vwidth = pageDims[1], 
+                 #                vheight = pageDims[2],
+                 vwidth = input$dimension[1], 
+                 vheight = input$dimension[2]
+                 #               cliprect = "viewport"
+                 
+        )
+        
+        
+      }
+    )
+    
+    
+    
+    
   })
+  
+  # define function to get page size dimensions
+  getPageSize <- function(pageSize) {
+    if (pageSize == "A4") {
+      return(c(width = 2480, height = 3508))
+    } else {
+      return(c(width = 2550, height = 3300))
+    }
+  }
+  
+  
+  # create download png
+  output$dl2 <- downloadHandler(
+    filename = "map.png",
+    
+    content = function(file) {
+      pageSize <- input$pagesize
+      pageDims <- getPageSize(pageSize)
+      mapshot( rv$map,
+               file = file)})
+  
+  # create download html
+  output$dl3 <- downloadHandler(
+    filename = "map.html",
+    
+    content = function(file) {
+      pageSize <- input$pagesize
+      pageDims <- getPageSize(pageSize)
+ 
+      
+      htmlwidgets::saveWidget(rv$map, file=file)})
+  
+  
   
   
 }

@@ -6,6 +6,10 @@ library(bslib)
 library(dplyr)
 library(shinyjs)
 
+library(mapview)
+library(htmlwidgets)
+webshot::install_phantomjs(force=TRUE)
+
 
 #Load components
 source('ui.R')
