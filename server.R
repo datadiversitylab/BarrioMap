@@ -18,23 +18,23 @@ server <- function(input, output, session) {
   #Render the initial map
   output$map <- leaflet::renderLeaflet({
     if(input$usecoordinates){
-    leaflet(options = leafletOptions(zoomControl = FALSE, 
-                                     zoomSnap = 0.001,
-                                     crs = leafletCRS(
-                                       scales = 1
-                                     ),
-                                     attributionControl=FALSE
-    )) %>% 
-      addTiles() %>%
-      #addProviderTiles(providers$Stamen.TonerLines) %>%
-      addScaleBar(position = 'bottomleft') %>%
-      setView(lng = -110.9742, lat = 32.2540, zoom = 5) %>%
-      addControlGPS(
-        options = gpsOptions(
-          position = "topright",
-          activate = TRUE, 
-          autoCenter = TRUE,
-          setView = TRUE))
+      leaflet(options = leafletOptions(zoomControl = FALSE, 
+                                       zoomSnap = 0.001,
+                                       crs = leafletCRS(
+                                         scales = 1
+                                       ),
+                                       attributionControl=FALSE
+      )) %>% 
+        addTiles() %>%
+        #addProviderTiles(providers$Stamen.TonerLines) %>%
+        addScaleBar(position = 'bottomleft') %>%
+        setView(lng = -110.9742, lat = 32.2540, zoom = 5) %>%
+        addControlGPS(
+          options = gpsOptions(
+            position = "topright",
+            activate = TRUE, 
+            autoCenter = TRUE,
+            setView = TRUE))
     }else{
       leaflet(options = leafletOptions(zoomControl = FALSE, 
                                        zoomSnap = 0.001,
@@ -100,15 +100,43 @@ server <- function(input, output, session) {
     
     rv$lat <- as.numeric(input$latitude)
     rv$lng <- as.numeric(input$longitude)
-
-    #Render the new map
-    shiny::isolate({
-      leafletProxy("map") %>%
-        setView(lng = rv$lng, lat = rv$lat, zoom = zl) %>% 
-        leaflet(options = leafletOptions(minZoom = zl, maxZoom = zl)) %>% 
-        leaflet.extras::activateGPS()
-    })
+    
+    
+    # Estimate the bounding box
+    lng1=input$map_bounds[[2]] #east
+    lat1=input$map_bounds[[1]] #north
+    lng2=input$map_bounds[[4]] #west
+    lat2=input$map_bounds[[3]] #south
+    # Render the new map with updated view and rectangle coordinates
+    leafletProxy("map") %>%
+      setView(lng = rv$lng, lat = rv$lat, zoom = zl) %>% 
+      clearShapes() %>%
+      addRectangles(
+        lng1=lng1, lat1=lat1,
+        lng2=lng2, lat2=lat2,
+        fillColor = "transparent"
+      )
   })
   
+  # Update rectangle coordinates when the map view changes
+  observe({
+    
+    if (!is.null(input$map_bounds)) {
+      # Get the bounding box
+      lng1=input$map_bounds[[2]] #east
+      lat1=input$map_bounds[[1]] #north
+      lng2=input$map_bounds[[4]] #west
+      lat2=input$map_bounds[[3]] #south
+      
+      # Update the rectangle coordinates
+      leafletProxy("map") %>%
+        clearShapes() %>%
+        addRectangles(
+          lng1=lng1, lat1=lat1,
+          lng2=lng2, lat2=lat2,
+          fillColor = "transparent"
+        )
+    }
+  })
   
 }
