@@ -1,6 +1,6 @@
-# OpenMapper: OSM for community mapping
+# Barrio Map: OSM for community mapping
 
-Project Title: Building a Bridge Between Open Access Mapping and Formal Planning Efforts
+Project Title: Barrio Map - A simple web application to bridge between Open Access Mapping and Formal Planning Efforts
 
 
 Project abstract: Citizen-driven mapping and open source mapping (OSM) have rapidly influenced the quality and quantity of geo-information available for planning and design decisions. Despite the numerous opportunities to support current built environment design and planning practices, uptake in professional and academic work has been hindered. This delay occurs in part due to fundamental functionality gaps with OSM that divide it from traditional planning practices. Here, we aim to generate an open access tool that enables the formal description of resolution, distances, and scales in static maps under an open source framework. The resulting maps are intended to further close the gap between citizens and decision makers, to add quantitative geo-referenced data to grassroots knowledge. The individuals and communities that are closest to the problems caused by environmental justice and spatial inequity are also those that can drive long term solutions.  Proprietary software does not benefit from existing citizen data and limits new contributions of the ongoing and direct community mapping efforts. Development of tools that allow for easy access and use along with high performance and functionality holds the potential to change the way planners work.
@@ -11,7 +11,11 @@ Project significance: We aim to generate an open source tool that extends the fu
 
 
 
-Contributors to the project:
+Credits to the project:
+
+Sponsor: University of Arizona, College of Architecture, Planning & Landscape Architecture
+
+Contributors:
 
 Mackenzie Waller
 University of Arizona, Department of Landscape Architecture
