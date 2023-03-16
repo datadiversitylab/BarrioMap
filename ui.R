@@ -57,10 +57,10 @@ ui <- navbarPage("ComMappeR",
                               
                               
                               #page size and screenshot
-                              selectInput("pagesize", "Page Size:", choices = c("A4", "Letter"), selected = "A4"),
-                              downloadButton("dl", "Export PDF"),
-                              downloadButton("dl2", "Export PNG"),
-                              downloadButton("dl3", "Export HTML")
+                              #selectInput("pagesize", "Page Size:", choices = c("A4", "Letter"), selected = "A4"),
+                              #downloadButton("dl", "Export PDF"),
+                              downloadButton("dl2", "Export PNG")
+                              #downloadButton("dl3", "Export HTML")
                             ),
                             mainPanel(
                               leaflet::leafletOutput("map", height = "500px", width = "100%")

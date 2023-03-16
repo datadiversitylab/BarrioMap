@@ -101,6 +101,12 @@ server <- function(input, output, session) {
     
     rv$lat <- as.numeric(input$latitude)
     rv$lng <- as.numeric(input$longitude)
+    
+    # Estimate the bounding box
+    lng1=input$map_bounds[[2]] #east
+    lat1=input$map_bounds[[1]] #north
+    lng2=input$map_bounds[[4]] #west
+    lat2=input$map_bounds[[3]] #south
 
     #Render the new map
 #    shiny::isolate({
@@ -116,7 +122,32 @@ server <- function(input, output, session) {
       addTiles() %>%
       addProviderTiles("OpenStreetMap") %>%
       addScaleBar(position = 'bottomleft') %>%
-      setView(lng = rv$lng, lat = rv$lat, zoom = zl)
+      setView(lng = rv$lng, lat = rv$lat, zoom = zl)%>%
+      clearShapes() %>%
+      addRectangles(
+        lng1=lng1, lat1=lat1,
+        lng2=lng2, lat2=lat2,
+        fillColor = "transparent")
+    print(c(lng1,lat1,lng2,lat2))
+    
+    # A clone of render to pass on to print
+    rv$map2 <- leaflet(options = leafletOptions(minZoom = zl, maxZoom = zl, attributionControl=FALSE)) %>%
+      addTiles() %>%
+      addProviderTiles("OpenStreetMap") %>%
+      addScaleBar(position = 'bottomleft') %>%
+#      setView(lng = rv$lng, lat = rv$lat, zoom = zl)%>%
+        fitBounds(lng1,lat1,lng2,lat2)
+#        clearShapes() %>%
+#      addRectangles(
+#        lng1=lng1, lat1=lat1,
+#        lng2=lng2, lat2=lat2,
+#        fillColor = "transparent")
+#    print(lng1,lat1,lng2,lat2)
+    lng1_2=rv$map2_bounds[[2]] #east
+    lat1_2=rv$map2_bounds[[1]] #north
+    lng2_2=rv$map2_bounds[[4]] #west
+    lat2_2=rv$map2_bounds[[3]] #south
+    print(c(lng1_2, lat1_2, lng2_2, lat2_2))
     
     # Update the output with the new map
     output$map <- renderLeaflet({rv$map})
@@ -127,26 +158,14 @@ server <- function(input, output, session) {
     
     
     
-    output$dl <- downloadHandler(
-      filename = "map.pdf",
-      
-      content = function(file) {
-        #        pageSize <- input$pagesize
-        #        pageDims <- getPageSize(pageSize)
-        mapshot( rv$map, 
-                 file = file,                
-                 
-                 #                vwidth = pageDims[1], 
-                 #                vheight = pageDims[2],
-                 vwidth = input$dimension[1], 
-                 vheight = input$dimension[2]
-                 #               cliprect = "viewport"
-                 
-        )
-        
-        
-      }
-    )
+#    output$dl <- downloadHandler(
+#      filename = "map.pdf",
+#      content = function(file) {
+#        mapshot( rv$map, 
+#                 file = file,                
+#                 vwidth = input$dimension[1], 
+#                 vheight = input$dimension[2]
+#        )})
     
     
     
@@ -154,13 +173,13 @@ server <- function(input, output, session) {
   })
   
   # define function to get page size dimensions
-  getPageSize <- function(pageSize) {
-    if (pageSize == "A4") {
-      return(c(width = 2480, height = 3508))
-    } else {
-      return(c(width = 2550, height = 3300))
-    }
-  }
+#  getPageSize <- function(pageSize) {
+#    if (pageSize == "A4") {
+#      return(c(width = 2480, height = 3508))
+#    } else {
+#      return(c(width = 2550, height = 3300))
+#    }
+#  }
   
   
   # create download png
@@ -168,21 +187,16 @@ server <- function(input, output, session) {
     filename = "map.png",
     
     content = function(file) {
-      pageSize <- input$pagesize
-      pageDims <- getPageSize(pageSize)
-      mapshot( rv$map,
+      mapshot( rv$map2,
                file = file)})
   
   # create download html
-  output$dl3 <- downloadHandler(
-    filename = "map.html",
-    
-    content = function(file) {
-      pageSize <- input$pagesize
-      pageDims <- getPageSize(pageSize)
- 
-      
-      htmlwidgets::saveWidget(rv$map, file=file)})
+#  output$dl3 <- downloadHandler(
+#    filename = "map.html",
+#    content = function(file) {
+#      pageSize <- input$pagesize
+#      pageDims <- getPageSize(pageSize)
+#      htmlwidgets::saveWidget(rv$map, file=file)})
   
   
   
