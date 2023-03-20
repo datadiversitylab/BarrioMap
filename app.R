@@ -5,6 +5,7 @@ library(leaflet.extras)
 library(bslib)
 library(dplyr)
 library(shinyjs)
+library(htmlwidgets)
 
 library(mapview)
 library(htmlwidgets)

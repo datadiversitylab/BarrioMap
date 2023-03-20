@@ -10,6 +10,9 @@ library(leaflet)
 library(leaflet.extras)
 library(shinyjs)
 library(mapview)
+library(htmlwidgets)
+
+jsfile <- "https://rawgit.com/rowanwins/leaflet-easyPrint/gh-pages/dist/bundle.js" 
 
 server <- function(input, output, session) {
   
@@ -127,31 +130,70 @@ server <- function(input, output, session) {
       addRectangles(
         lng1=lng1, lat1=lat1,
         lng2=lng2, lat2=lat2,
-        fillColor = "transparent")
-    print(c(lng1,lat1,lng2,lat2))
+        fillColor = "transparent") %>%
+    onRender(
+            "function(el, x) {
+                L.easyPrint({
+                  sizeModes: ['Current', 'A4Landscape', 'A4Portrait'],
+                  filename: 'mymap',
+                  exportOnly: true,
+                  hideControlContainer: true
+                }).addTo(this);
+                }")
+#    print(c(lng1,lat1,lng2,lat2))
     
     # A clone of render to pass on to print
-    rv$map2 <- leaflet(options = leafletOptions(minZoom = zl, maxZoom = zl, attributionControl=FALSE)) %>%
-      addTiles() %>%
-      addProviderTiles("OpenStreetMap") %>%
-      addScaleBar(position = 'bottomleft') %>%
+#    rv$map2 <- leaflet(options = leafletOptions(minZoom = zl, maxZoom = zl, attributionControl=FALSE)) %>%
+#      addTiles() %>%
+#      addProviderTiles("OpenStreetMap") %>%
+#      addScaleBar(position = 'bottomleft') %>%
 #      setView(lng = rv$lng, lat = rv$lat, zoom = zl)%>%
-        fitBounds(lng1,lat1,lng2,lat2)
+#        fitBounds(lng1,lat1,lng2,lat2)
+#      clearBounds() %>%
+#      setMaxBounds(lng1, lat1, lng2, lat2)   # %>%
+#      onRender(
+#        "function(el, x) {
+#            L.easyPrint({
+#              sizeModes: ['Current', 'A4Landscape', 'A4Portrait'],
+#              filename: 'mymap',
+#              exportOnly: true,
+#              hideControlContainer: true
+#            }).addTo(this);
+#            }")
+      
+      
 #        clearShapes() %>%
 #      addRectangles(
 #        lng1=lng1, lat1=lat1,
 #        lng2=lng2, lat2=lat2,
 #        fillColor = "transparent")
 #    print(lng1,lat1,lng2,lat2)
-    lng1_2=rv$map2_bounds[[2]] #east
-    lat1_2=rv$map2_bounds[[1]] #north
-    lng2_2=rv$map2_bounds[[4]] #west
-    lat2_2=rv$map2_bounds[[3]] #south
-    print(c(lng1_2, lat1_2, lng2_2, lat2_2))
+ #   print(rv$map2$x$fitBounds)
     
+#    lng1_2=rv$map2_bounds[[2]] #east
+#    lat1_2=rv$map2_bounds[[1]] #north
+#    lng2_2=rv$map2_bounds[[4]] #west
+#    lat2_2=rv$map2_bounds[[3]] #south
+#    print(c(lng1_2, lat1_2, lng2_2, lat2_2))
+
+
+    
+#observe({
+#  print(input$map2_bounds)
+#})
+    
+    
+#      leafletProxy("map2") %>%
+#        leaflet::getBounds() %>%
+#        showModal()
+    
+        
     # Update the output with the new map
     output$map <- renderLeaflet({rv$map})
-  
+    
+    
+
+
     
 
     # create download pdf
@@ -183,12 +225,13 @@ server <- function(input, output, session) {
   
   
   # create download png
-  output$dl2 <- downloadHandler(
-    filename = "map.png",
-    
-    content = function(file) {
-      mapshot( rv$map2,
-               file = file)})
+#  output$dl2 <- downloadHandler(
+#    filename = "map.pdf",
+#    content = function(file) {
+#      mapshot( rv$map2,
+#               file = file)})
+  
+#leaflet.extras2::addEasyprint(rv$map2) 
   
   # create download html
 #  output$dl3 <- downloadHandler(
@@ -197,6 +240,12 @@ server <- function(input, output, session) {
 #      pageSize <- input$pagesize
 #      pageDims <- getPageSize(pageSize)
 #      htmlwidgets::saveWidget(rv$map, file=file)})
+#  output$dl2 <- downloadHandler(
+#    filename = "map.html",
+    
+#    content = function(file) {
+
+ #     saveWidget(rv$map2, file=file)})
   
   
   

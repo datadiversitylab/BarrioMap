@@ -5,16 +5,19 @@
 # Used to define the graphical aspects of the app.
 ###################
 
-ui <- navbarPage("ComMappeR",
+jsfile <- "https://rawgit.com/rowanwins/leaflet-easyPrint/gh-pages/dist/bundle.js" 
+ui <- navbarPage("BarrioMap",
                  theme = bslib::bs_theme(version = 4, bootswatch = "minty"), #https://bootswatch.com/
                  tabPanel("Welcome",
                           br(),
-                          h4("Welcome to ComMappeR!", align = "center"),
+                          h4("Welcome to Barrio Map!", align = "center"),
                           br(),
-                          h6("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Est pellentesque elit ullamcorper dignissim cras. Mauris pellentesque pulvinar pellentesque habitant morbi tristique senectus. Dui nunc mattis enim ut. In iaculis nunc sed augue lacus viverra vitae congue eu. Morbi tristique senectus et netus et. Ultrices eros in cursus turpis massa tincidunt dui ut. Turpis nunc eget lorem dolor sed viverra ipsum nunc. Facilisis sed odio morbi quis. Amet massa vitae tortor condimentum lacinia quis vel eros donec. Non quam lacus suspendisse faucibus interdum posuere. Tempus iaculis urna id volutpat lacus laoreet non curabitur. Pharetra massa massa ultricies mi quis hendrerit dolor magna. Faucibus et molestie ac feugiat sed lectus vestibulum mattis. Elementum nisi quis eleifend quam adipiscing. Accumsan tortor posuere ac ut. A lacus vestibulum sed arcu non odio euismod lacinia.", align = "center"),
-                          h6("Turpis egestas integer eget aliquet nibh praesent tristique. Porta lorem mollis aliquam ut porttitor. Eget sit amet tellus cras adipiscing enim eu. In metus vulputate eu scelerisque. Nam at lectus urna duis convallis convallis tellus id. Ultrices dui sapien eget mi proin sed libero. Tortor condimentum lacinia quis vel eros donec ac odio. Ornare quam viverra orci sagittis eu volutpat odio. Senectus et netus et malesuada fames ac. Convallis a cras semper auctor neque vitae tempus quam. At risus viverra adipiscing at in tellus. Pellentesque adipiscing commodo elit at imperdiet dui. Placerat duis ultricies lacus sed. Risus nullam eget felis eget nunc lobortis mattis aliquam. Donec ultrices tincidunt arcu non sodales neque sodales. Sollicitudin nibh sit amet commodo nulla facilisi. Dis parturient montes nascetur ridiculus mus mauris. Eget lorem dolor sed viverra. Platea dictumst vestibulum rhoncus est pellentesque elit ullamcorper dignissim.", align = "center")
-                          ),
-                 tabPanel("Create your map!",
+                          h6("Barrio Map is a web mapping application offered by University of Arizona. It bridges the gap between Open Access Mapping and Formal Planning Efforts. We aim to generate an open access tool that enables the formal description of resolution, distances and scales in static maps under an open source framework. The resulting maps are intended to further close the gap between citizens and decision makers, to add quantitative geo-referenced data to grassroots knowledge. The individuals and communities that are closest to the problems caused by environmental justice and spatial inequity are also those that can drive long term solutions.  Proprietary software does not benefit from existing citizen data and limits new contributions of the ongoing and direct community mapping efforts. Development of tools that allow for easy access and use along with high performance and functionality holds the potential to change the way planners work.", align = "center"),
+                          h6("A chasm separates open source mapping and traditional planning practices. Current processes rely upon planning and design professionals to filter information from open source maps into license software for access to the information in a legible format. This extra step is both time consuming, and places the final interpretation of the information in the hands of individuals with access to the skills and software. In fact, tools that would allow for traditional planning under an open source framework are scattered across different software, making it much more difficult to use effectively by non-experts. Fee based licensed software integrates relevant tools into a single environment. This software is costly and has a steep learning curve. To our knowledge, none of the existing open source online tools integrate all the fundamental traditional planning practices. Here, we focus on developing a comprehensive open source web based mapping toolset called Barrio Map that has the functionality of traditional planning practices and a user friendly interface.", align = "center"),
+                          
+                          h6("Hosting Barrio Map wouldn’t be possible without the support of sponsor: University of Arizona and seed contributors: Mackenzie Waller University of Arizona, Department of Landscape Architecture; Cristian Román-Palacios University of Arizona, Assistant Professor of Practice, UArizona School of Information; Sarthak Haldar University of Arizona, Graduate Student Data Science, UArizona School of Information who donate their time, effort, hosting space or hardware to accomplish the target.", align = "center")
+                          ),                 
+                          tabPanel("Create your map!",
                           sidebarLayout(
                             sidebarPanel(
                               shinyjs::useShinyjs(),
@@ -40,26 +43,28 @@ ui <- navbarPage("ComMappeR",
                               #button
                               actionButton("refresh", "Refresh"),
                               
+                              tags$head(tags$script(src = jsfile)),
+                              
                               # js to get width/height of map div
-                              tags$head(tags$script('
-                        var dimension = [0, 0];
-                        $(document).on("shiny:connected", function(e) {
-                        dimension[0] = document.getElementById("map").clientWidth;
-                        dimension[1] = document.getElementById("map").clientHeight;
-                        Shiny.onInputChange("dimension", dimension);
-                        });
-                        $(window).resize(function(e) {
-                        dimension[0] = document.getElementById("map").clientWidth;
-                        dimension[1] = document.getElementById("map").clientHeight;
-                        Shiny.onInputChange("dimension", dimension);
-                        });
-                        ')),
+         #                     tags$head(tags$script('
+          #              var dimension = [0, 0];
+          #              $(document).on("shiny:connected", function(e) {
+          #              dimension[0] = document.getElementById("map").clientWidth;
+          #              dimension[1] = document.getElementById("map").clientHeight;
+          #              Shiny.onInputChange("dimension", dimension);
+          #              });
+          #              $(window).resize(function(e) {
+          #              dimension[0] = document.getElementById("map").clientWidth;
+          #              dimension[1] = document.getElementById("map").clientHeight;
+          #              Shiny.onInputChange("dimension", dimension);
+          #              });
+          #              ')),
                               
                               
                               #page size and screenshot
                               #selectInput("pagesize", "Page Size:", choices = c("A4", "Letter"), selected = "A4"),
                               #downloadButton("dl", "Export PDF"),
-                              downloadButton("dl2", "Export PNG")
+                              #downloadButton("dl2", "Export PNG")
                               #downloadButton("dl3", "Export HTML")
                             ),
                             mainPanel(
