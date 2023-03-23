@@ -4,7 +4,6 @@
 # UI controller. 
 # Used to define the graphical aspects of the app.
 ###################
-jsfile <- "https://rawgit.com/rowanwins/leaflet-easyPrint/gh-pages/dist/bundle.js" 
 
 ui <- navbarPage("ComMappeR",
                  theme = bslib::bs_theme(version = 4, bootswatch = "minty"), #https://bootswatch.com/
