@@ -7,9 +7,14 @@
 
 library(dplyr)
 library(leaflet)
+library(shiny)
+library(leaflet.extras2)
 library(leaflet.extras)
 library(shinyjs)
+library(htmlwidgets)
 
+
+jsfile <- "https://rawgit.com/rowanwins/leaflet-easyPrint/gh-pages/dist/bundle.js" 
 server <- function(input, output, session) {
   
   # Reactive values for latitude and longitude
@@ -108,15 +113,19 @@ server <- function(input, output, session) {
     lng2=input$map_bounds[[4]] #west
     lat2=input$map_bounds[[3]] #south
     # Render the new map with updated view and rectangle coordinates
-    leafletProxy("map") %>%
+   leafletProxy("map") %>%
       setView(lng = rv$lng, lat = rv$lat, zoom = zl) %>% 
       clearShapes() %>%
       addRectangles(
         lng1=lng1, lat1=lat1,
         lng2=lng2, lat2=lat2,
-        fillColor = "transparent"
-      )
+        fillColor = "transparent") 
   })
+  
+  
+
+  
+  
   
   # Update rectangle coordinates when the map view changes
   observe({
@@ -134,9 +143,20 @@ server <- function(input, output, session) {
         addRectangles(
           lng1=lng1, lat1=lat1,
           lng2=lng2, lat2=lat2,
-          fillColor = "transparent"
-        )
+          fillColor = "transparent") %>%
+        addEasyprint(options = easyprintOptions(
+            title = 'Print map',
+            position = 'bottomleft',
+            exportOnly = TRUE))
     }
+    
   })
+
+
+  
+
+
+  
+
   
 }
