@@ -14,7 +14,6 @@ library(shinyjs)
 library(htmlwidgets)
 
 
-jsfile <- "https://rawgit.com/rowanwins/leaflet-easyPrint/gh-pages/dist/bundle.js" 
 server <- function(input, output, session) {
   
   # Reactive values for latitude and longitude
