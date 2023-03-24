@@ -1060,6 +1060,34 @@
         "Built": "R 4.2.0; ; 2022-04-13 00:18:06 UTC; unix"
       }
     },
+    "leaflet.extras2": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com/",
+      "description": {
+        "Package": "leaflet.extras2",
+        "Type": "Package",
+        "Title": "Extra Functionality for 'leaflet' Package",
+        "Version": "1.2.0",
+        "Authors@R": "c(\n      person(\"Gatscha\", \"Sebastian\", email = \"sebastian_gatscha@gmx.at\", role = c(\"aut\", \"cre\")),\n      person(\"Ricardo Rodrigo\", \"Basa\", email = \"radbasa@gmail.com\", role = c(\"ctb\")),\n      person(c(\"Jeffrey\", \"O\"), \"Hanson\", email = \"jeffrey.hanson@uqconnect.edu.au\", role = c(\"ctb\"), comment = c(ORCID = \"0000-0002-4716-6134\"))\n    )",
+        "Description": "Several 'leaflet' plugins are integrated, which are available as extension to the 'leaflet' package.",
+        "License": "GPL-3 | file LICENSE",
+        "Encoding": "UTF-8",
+        "LazyData": "true",
+        "Depends": "R (>= 3.1.0), leaflet (>= 2.0.0)",
+        "Imports": "htmltools, magrittr, utils",
+        "Suggests": "jsonlite, shiny, sf, geojsonsf, sp, testthat (>= 2.1.0),\nfontawesome, htmlwidgets, covr",
+        "URL": "https://trafficonese.github.io/leaflet.extras2/,\nhttps://github.com/trafficonese/leaflet.extras2",
+        "BugReports": "https://github.com/trafficonese/leaflet.extras2/issues",
+        "RoxygenNote": "7.1.1",
+        "NeedsCompilation": "no",
+        "Packaged": "2022-05-10 19:23:07 UTC; gatscha",
+        "Author": "Gatscha Sebastian [aut, cre],\n  Ricardo Rodrigo Basa [ctb],\n  Jeffrey O Hanson [ctb] (<https://orcid.org/0000-0002-4716-6134>)",
+        "Maintainer": "Gatscha Sebastian <sebastian_gatscha@gmx.at>",
+        "Repository": "CRAN",
+        "Date/Publication": "2022-05-10 19:40:02 UTC",
+        "Built": "R 4.2.0; ; 2022-05-11 12:50:55 UTC; unix"
+      }
+    },
     "leaflet.providers": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com/",
@@ -1425,25 +1453,25 @@
         "Package": "raster",
         "Type": "Package",
         "Title": "Geographic Data Analysis and Modeling",
-        "Version": "3.5-15",
-        "Date": "2022-01-22",
-        "Imports": "Rcpp, methods, terra (>= 1.5-12)",
+        "Version": "3.6-14",
+        "Date": "2023-01-12",
+        "Imports": "Rcpp, methods, terra (>= 1.6-41)",
         "LinkingTo": "Rcpp",
         "Depends": "sp (>= 1.4-5), R (>= 3.5.0)",
-        "Suggests": "rgdal (>= 1.5-23), rgeos (>= 0.5-3), ncdf4, igraph, tcltk,\nparallel, rasterVis, MASS, sf, tinytest, gstat, fields,\nexactextractr",
+        "Suggests": "ncdf4, igraph, tcltk, parallel, rasterVis, MASS, sf,\ntinytest, gstat, fields, exactextractr",
         "SystemRequirements": "C++11",
-        "Description": "Reading, writing, manipulating, analyzing and modeling of spatial data. The package implements basic and high-level functions for raster data and for vector data operations such as intersections. See the manual and tutorials on <https://rspatial.org/> to get started.",
+        "Description": "Reading, writing, manipulating, analyzing and modeling of spatial data. This package has been superseded by the \"terra\" package <https://CRAN.R-project.org/package=terra>. ",
         "License": "GPL (>= 3)",
         "URL": "https://rspatial.org/raster",
         "BugReports": "https://github.com/rspatial/raster/issues/",
         "Authors@R": "c(\n\tperson(\"Robert J.\", \"Hijmans\", role = c(\"cre\", \"aut\"),  \n\t\t\temail = \"r.hijmans@gmail.com\", \n\t\t\tcomment = c(ORCID = \"0000-0001-5872-2872\")),\n\tperson(\"Jacob\", \"van Etten\", role = \"ctb\"),\n\tperson(\"Michael\", \"Sumner\", role = \"ctb\"),\n\tperson(\"Joe\", \"Cheng\", role = \"ctb\"),\n\tperson(\"Dan\", \"Baston\", role = \"ctb\"),\n\tperson(\"Andrew\", \"Bevan\", role = \"ctb\"),\n\tperson(\"Roger\", \"Bivand\", role = \"ctb\"),\n\tperson(\"Lorenzo\", \"Busetto\", role = \"ctb\"),\n\tperson(\"Mort\", \"Canty\", role = \"ctb\"),\n\tperson(\"Ben\", \"Fasoli\", role = \"ctb\"),\n\tperson(\"David\", \"Forrest\", role = \"ctb\"),\n\tperson(\"Aniruddha\", \"Ghosh\", role = \"ctb\"),\n\tperson(\"Duncan\", \"Golicher\", role = \"ctb\"),\n\tperson(\"Josh\", \"Gray\", role = \"ctb\"),\n\tperson(\"Jonathan A.\", \"Greenberg\", role = \"ctb\"),\n\tperson(\"Paul\", \"Hiemstra\", role = \"ctb\"),\n\tperson(\"Kassel\", \"Hingee\", role = \"ctb\"),\n\tperson(\"Alex\", \"Ilich\", role = \"ctb\"),\n\tperson(\"Institute for Mathematics Applied Geosciences\", role=\"cph\"),\n\tperson(\"Charles\", \"Karney\", role = \"ctb\"),\n\tperson(\"Matteo\", \"Mattiuzzi\", role = \"ctb\"),\n\tperson(\"Steven\", \"Mosher\", role = \"ctb\"),\n\tperson(\"Babak\", \"Naimi\", role = \"ctb\"),\t\n\tperson(\"Jakub\", \"Nowosad\", role = \"ctb\"),\n\tperson(\"Edzer\", \"Pebesma\", role = \"ctb\"),\n\tperson(\"Oscar\", \"Perpinan Lamigueiro\", role = \"ctb\"),\n\tperson(\"Etienne B.\", \"Racine\", role = \"ctb\"),\n\tperson(\"Barry\", \"Rowlingson\", role = \"ctb\"),\n\tperson(\"Ashton\", \"Shortridge\", role = \"ctb\"),\n\tperson(\"Bill\", \"Venables\", role = \"ctb\"),\n\tperson(\"Rafael\", \"Wueest\", role = \"ctb\")\n\t)",
         "NeedsCompilation": "yes",
-        "Packaged": "2022-01-22 18:13:14 UTC; rhijm",
+        "Packaged": "2023-01-15 02:51:22 UTC; rhijm",
         "Author": "Robert J. Hijmans [cre, aut] (<https://orcid.org/0000-0001-5872-2872>),\n  Jacob van Etten [ctb],\n  Michael Sumner [ctb],\n  Joe Cheng [ctb],\n  Dan Baston [ctb],\n  Andrew Bevan [ctb],\n  Roger Bivand [ctb],\n  Lorenzo Busetto [ctb],\n  Mort Canty [ctb],\n  Ben Fasoli [ctb],\n  David Forrest [ctb],\n  Aniruddha Ghosh [ctb],\n  Duncan Golicher [ctb],\n  Josh Gray [ctb],\n  Jonathan A. Greenberg [ctb],\n  Paul Hiemstra [ctb],\n  Kassel Hingee [ctb],\n  Alex Ilich [ctb],\n  Institute for Mathematics Applied Geosciences [cph],\n  Charles Karney [ctb],\n  Matteo Mattiuzzi [ctb],\n  Steven Mosher [ctb],\n  Babak Naimi [ctb],\n  Jakub Nowosad [ctb],\n  Edzer Pebesma [ctb],\n  Oscar Perpinan Lamigueiro [ctb],\n  Etienne B. Racine [ctb],\n  Barry Rowlingson [ctb],\n  Ashton Shortridge [ctb],\n  Bill Venables [ctb],\n  Rafael Wueest [ctb]",
         "Maintainer": "Robert J. Hijmans <r.hijmans@gmail.com>",
         "Repository": "CRAN",
-        "Date/Publication": "2022-01-22 23:02:41 UTC",
-        "Built": "R 4.2.0; x86_64-apple-darwin17.0; 2022-04-26 09:02:22 UTC; unix",
+        "Date/Publication": "2023-01-16 13:10:02 UTC",
+        "Built": "R 4.2.0; x86_64-apple-darwin17.0; 2023-01-17 13:28:56 UTC; unix",
         "Archs": "raster.so.dSYM"
       }
     },
@@ -1713,27 +1741,29 @@
         "Package": "terra",
         "Type": "Package",
         "Title": "Spatial Data Analysis",
-        "Version": "1.5-34",
-        "Date": "2022-05-16",
+        "Version": "1.7-3",
+        "Date": "2023-01-23",
         "Depends": "R (>= 3.5.0)",
-        "Suggests": "parallel, tinytest, ncdf4, sf (>= 0.9-8), deldir, XML, igraph",
+        "Suggests": "parallel, tinytest, ncdf4, sf (>= 0.9-8), deldir, XML,\nleaflet",
         "LinkingTo": "Rcpp",
         "Imports": "methods, Rcpp",
         "SystemRequirements": "C++11, GDAL (>= 2.2.3), GEOS (>= 3.4.0), PROJ (>=\n4.9.3), sqlite3",
         "Encoding": "UTF-8",
+        "Language": "en-US",
         "Maintainer": "Robert J. Hijmans <r.hijmans@gmail.com>",
-        "Description": "Methods for spatial data analysis with raster and vector data. Raster methods allow for low-level data manipulation as well as high-level global, local, zonal, and focal computation. The predict and interpolate methods facilitate the use of regression type (interpolation, machine learning) models for spatial prediction, including with satellite remote sensing data. Processing of very large files is supported. See the manual and tutorials on <https://rspatial.org/terra/> to get started. 'terra' is very similar to the 'raster' package; but 'terra' can do more, is easier to use, and it is faster.",
+        "Description": "Methods for spatial data analysis with vector (points, lines, polygons) and raster (grid) data. Methods for vector data include standard operations such as intersect and buffer. Raster methods include global, local, zonal, and focal computations. The predict and interpolate methods facilitate the use of regression type (interpolation, machine learning) models for spatial prediction, including with satellite remote sensing data. Processing of very large files is supported. See the manual and tutorials on <https://rspatial.org/terra/> to get started. 'terra' is a replacement for the 'raster' package ('terra' can do more, and it is faster and easier to use).",
         "License": "GPL (>= 3)",
         "URL": "https://rspatial.org/terra/",
         "BugReports": "https://github.com/rspatial/terra/issues/",
         "LazyLoad": "yes",
-        "Authors@R": "c(\n\tperson(\"Robert J.\", \"Hijmans\", role = c(\"cre\", \"aut\"),  \n\t\t\temail = \"r.hijmans@gmail.com\", comment = c(ORCID = \"0000-0001-5872-2872\")),\n    person(\"Roger\", \"Bivand\",  role = \"ctb\", comment = c(ORCID = \"0000-0003-2392-6140\")),\n\tperson(\"Karl\", \"Forner\", role = \"ctb\"),\n\tperson(\"Jeroen\", \"Ooms\", role = \"ctb\", comment = c(ORCID = \"0000-0002-4035-0289\")),\n    person(\"Edzer\", \"Pebesma\", role = \"ctb\", comment = c(ORCID = \"0000-0001-8049-7069\")),\n    person(\"Michael D.\", \"Sumner\", role = \"ctb\"))",
+        "Authors@R": "c(\n\tperson(\"Robert J.\", \"Hijmans\", role = c(\"cre\", \"aut\"),  \n\t\t\temail = \"r.hijmans@gmail.com\", comment = c(ORCID = \"0000-0001-5872-2872\")),\n    person(\"Roger\", \"Bivand\",  role = \"ctb\", comment = c(ORCID = \"0000-0003-2392-6140\")),\n    person(\"Edzer\", \"Pebesma\", role = \"ctb\", comment = c(ORCID = \"0000-0001-8049-7069\")),\n    person(\"Michael D.\", \"Sumner\", role = \"ctb\"))",
         "NeedsCompilation": "yes",
-        "Packaged": "2022-06-09 09:17:02 UTC; hornik",
-        "Author": "Robert J. Hijmans [cre, aut] (<https://orcid.org/0000-0001-5872-2872>),\n  Roger Bivand [ctb] (<https://orcid.org/0000-0003-2392-6140>),\n  Karl Forner [ctb],\n  Jeroen Ooms [ctb] (<https://orcid.org/0000-0002-4035-0289>),\n  Edzer Pebesma [ctb] (<https://orcid.org/0000-0001-8049-7069>),\n  Michael D. Sumner [ctb]",
+        "Packaged": "2023-01-24 02:34:48 UTC; rhijm",
+        "Author": "Robert J. Hijmans [cre, aut] (<https://orcid.org/0000-0001-5872-2872>),\n  Roger Bivand [ctb] (<https://orcid.org/0000-0003-2392-6140>),\n  Edzer Pebesma [ctb] (<https://orcid.org/0000-0001-8049-7069>),\n  Michael D. Sumner [ctb]",
         "Repository": "CRAN",
-        "Date/Publication": "2022-06-09 10:52:21 UTC",
-        "Built": "R 4.2.0; x86_64-apple-darwin17.0; 2022-06-21 17:03:28 UTC; unix"
+        "Date/Publication": "2023-01-24 13:40:02 UTC",
+        "Built": "R 4.2.0; x86_64-apple-darwin17.0; 2023-01-25 13:09:50 UTC; unix",
+        "Archs": "terra.so.dSYM"
       }
     },
     "tibble": {
@@ -2030,16 +2060,16 @@
       "checksum": "2e2eacdfd75c8eb14c6807cef8c853a7"
     },
     "README.md": {
-      "checksum": "ce9ad514d3d7d8cccdbce7d3ac176ad5"
+      "checksum": "a8a7826f976bf50c93174ec003c1ee57"
     },
-    "relevatEqs.R": {
-      "checksum": "e90f9d13d0e26f5dd1f1d17f10177e34"
+    "relevantEqs.R": {
+      "checksum": "6f22597edc30bfac8c36c5e5870e756c"
     },
     "server.R": {
-      "checksum": "db71cc059979dd85316aebb7a49aee24"
+      "checksum": "dea1950812ab9e2874e5db8e184bdf5a"
     },
     "ui.R": {
-      "checksum": "92894d847e796ec381d09c33e3bb8abd"
+      "checksum": "a04b0394856cef99478d3d6b7e008cde"
     }
   },
   "users": null
