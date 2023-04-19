@@ -15,7 +15,16 @@ library(htmlwidgets)
 
 
 server <- function(input, output, session) {
-  
+
+  # update the map width dynamically
+  output$mapjs <- renderUI({
+    tags$script(HTML(paste0(
+      'document.getElementById("map").style.width="', input$mapWidth, '%";
+      document.getElementById("map").style.height="', input$mapHeight, '%";'
+    )))
+  })
+
+
   # Reactive values for latitude and longitude
   rv <- reactiveValues(latitude = 0 , longitude = 0)
   
@@ -89,9 +98,10 @@ server <- function(input, output, session) {
                        inputId = "latitude",
                        value = input$map_center$lat)
   })
+
   
   observeEvent(input$refresh, {
-    
+
     ## Estimate the zoom level for a given scale
     zl = log2(input$dpi * 1/0.0254 * 156543.03 * cos(input$map_center$lat) / as.numeric(input$scale) )
     
@@ -118,14 +128,16 @@ server <- function(input, output, session) {
     lng2=input$map_bounds[[4]] #west
     lat2=input$map_bounds[[3]] #south
     # Render the new map with updated view and rectangle coordinates
-   leafletProxy("map") %>%
+   leafletProxy("map", session) %>%
       setView(lng = rv$lng, lat = rv$lat, zoom = zl) 
-      })
+  
+
+})
 
 # DPI support: https://github.com/trafficonese/leaflet.extras2/blob/print_dpi/R/easyprint.R
 
     observeEvent(input$print, {
-      leafletProxy("map") %>%
+      leafletProxy("map", session) %>%
         easyprintMap(sizeModes = input$scene, filename = paste0("BarrioMap_scale_1:", input$scale))
     })  
 

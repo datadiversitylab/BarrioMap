@@ -35,7 +35,7 @@ ui <- navbarPage("Barrio Map",
                               checkboxInput("usecoordinates", "Define coordinates?", TRUE),
                               #input lat lng
                               numericInput("latitude", "Latitude", value = 0),
-                              numericInput("longitude", "Longitude", value = 0), 
+                              numericInput("longitude", "Longitude", value = 0),
                               # Scale selection box
                               selectInput("scale", "Define scale (1:x m)", 
                                           choices = c("1:5,840" = 5840, 
@@ -43,21 +43,23 @@ ui <- navbarPage("Barrio Map",
                                                       "1:384" = 384
                                                       )
                                           ),
+                              sliderInput("mapWidth", "Map Width", 2.5, 97.5, 50),
+                              sliderInput("mapHeight", "Map Width", 2.5, 97.5, 50),
                               numericInput("dpi", "DPI", value = 150), 
-                              selectInput("scene", "Select Scene", choices = c("CurrentSize", "A4Landscape", "A4Portrait")),
+                              selectInput("scene", "Select Scene", choices = c("CurrentSize", "A4Landscape", "A4Portrait")),                              
+                              #button
+                              actionButton("refresh", "Refresh"),
+                              actionButton("print", "Print Map"),
                               #Some text in the app for testing
                               textOutput("zoomL"),
                               textOutput("resolutionL"),
-                              textOutput("scaleL"),
-                              
-                              #button
-                              actionButton("refresh", "Refresh"),
-                              actionButton("print", "Print Map")
+                              textOutput("scaleL")
                             ),
                             mainPanel(
-                              leaflet::leafletOutput("map", height = "500px", width = "100%")
+                              #uiOutput("leaf")
+                              leaflet::leafletOutput("map", height = "500px", width = "100%"),
+                              uiOutput("mapjs")
                               #leaflet::leafletOutput("map", height = "2480px", width = "3508px")
-
                             )
                           )),
                  tabPanel("About us",
