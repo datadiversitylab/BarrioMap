@@ -38,7 +38,11 @@ server <- function(input, output, session) {
             position = "topright",
             activate = TRUE, 
             autoCenter = TRUE,
-            setView = TRUE))
+            setView = TRUE))%>%
+      addEasyprint(options = easyprintOptions(
+        exportOnly = TRUE,
+        hidden = TRUE
+      )) 
     }else{
       leaflet(options = leafletOptions(zoomControl = FALSE, 
                                        zoomSnap = 0.001,
@@ -57,7 +61,11 @@ server <- function(input, output, session) {
             activate = TRUE, 
             autoCenter = TRUE,
             setView = TRUE))%>% 
-        addSearchOSM(options = searchOptions(autoCollapse = FALSE, minLength = 2))
+        addSearchOSM(options = searchOptions(autoCollapse = FALSE, minLength = 2))%>%
+      addEasyprint(options = easyprintOptions(
+        exportOnly = TRUE,
+        hidden = TRUE
+      ))
     }
   }) 
   
@@ -101,10 +109,8 @@ server <- function(input, output, session) {
     output$scaleL <- renderText({ paste0("Scale = 1:", round(scale, 3) ) })
     output$scaleL <- renderText({ paste0("1 screen cm is ", round(scale/10, 3), " m" ) })
     
-    
     rv$lat <- as.numeric(input$latitude)
     rv$lng <- as.numeric(input$longitude)
-    
     
     # Estimate the bounding box
     lng1=input$map_bounds[[2]] #east
@@ -113,49 +119,14 @@ server <- function(input, output, session) {
     lat2=input$map_bounds[[3]] #south
     # Render the new map with updated view and rectangle coordinates
    leafletProxy("map") %>%
-      setView(lng = rv$lng, lat = rv$lat, zoom = zl) %>% 
-      clearShapes() %>%
-      addRectangles(
-        lng1=lng1, lat1=lat1,
-        lng2=lng2, lat2=lat2,
-        fillColor = "transparent") 
-  })
-  
-  
+      setView(lng = rv$lng, lat = rv$lat, zoom = zl) 
+      })
 
-  
-  
-  
-  # Update rectangle coordinates when the map view changes
-  observe({
-    
-    if (!is.null(input$map_bounds)) {
-      # Get the bounding box
-      lng1=input$map_bounds[[2]] #east
-      lat1=input$map_bounds[[1]] #north
-      lng2=input$map_bounds[[4]] #west
-      lat2=input$map_bounds[[3]] #south
-      
-      # Update the rectangle coordinates
+# DPI support: https://github.com/trafficonese/leaflet.extras2/blob/print_dpi/R/easyprint.R
+
+    observeEvent(input$print, {
       leafletProxy("map") %>%
-        clearShapes() %>%
-        addRectangles(
-          lng1=lng1, lat1=lat1,
-          lng2=lng2, lat2=lat2,
-          fillColor = "transparent") %>%
-        addEasyprint(options = easyprintOptions(
-            title = 'Print map',
-            position = 'bottomleft',
-            exportOnly = TRUE))
-    }
-    
-  })
+        easyprintMap(sizeModes = input$scene, filename = paste0("BarrioMap_scale_1:", input$scale))
+    })  
 
-
-  
-
-
-  
-
-  
 }
