@@ -19,8 +19,7 @@ server <- function(input, output, session) {
   # update the map width dynamically
   output$mapjs <- renderUI({
     tags$script(HTML(paste0(
-      'document.getElementById("map").style.width="', input$mapWidth, '%";
-      document.getElementById("map").style.height="', input$mapHeight, '%";'
+      'document.getElementById("map").style.width="', input$mapWidth, '%";'
     )))
   })
 

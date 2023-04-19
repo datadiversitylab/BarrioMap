@@ -43,8 +43,7 @@ ui <- navbarPage("Barrio Map",
                                                       "1:384" = 384
                                                       )
                                           ),
-                              sliderInput("mapWidth", "Map Width", 2.5, 97.5, 50),
-                              sliderInput("mapHeight", "Map Width", 2.5, 97.5, 50),
+                              sliderInput("mapWidth", "Map Width", 1, 100, 50),
                               numericInput("dpi", "DPI", value = 150), 
                               selectInput("scene", "Select Scene", choices = c("CurrentSize", "A4Landscape", "A4Portrait")),                              
                               #button
