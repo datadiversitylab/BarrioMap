@@ -22,6 +22,7 @@ server <- function(input, output, session) {
       'document.getElementById("map").style.width="', input$mapWidth, '%";'
     )))
   })
+  
 
 
   # Reactive values for latitude and longitude
@@ -48,8 +49,38 @@ server <- function(input, output, session) {
             autoCenter = TRUE,
             setView = TRUE))%>%
       addEasyprint(options = easyprintOptions(
+        dpi = input$dpi,
+        title = 'Give me that map',
+        position = 'bottomleft',
         exportOnly = TRUE,
-        hidden = TRUE
+        # hideClasses = list("leaflet-overlay-pane", "leaflet-popup"),
+         hidden = TRUE, hideControlContainer = TRUE,
+        filename = "mapit",
+        tileLayer = "basemap",
+        tileWait = 5000,
+        defaultSizeTitles = list(
+          "CurrentSize" = "The current map extent",
+          "A4Landscape" = "A4 (Landscape) extent with w:1045, h:715",
+          "A4Portrait" = "A4  (Portrait) extent with w:715, h:1045"
+        ),
+        # sizeModes = c("A4Portrait","A4Landscape"),
+        sizeModes = list("CurrentSize" = "CurrentSize",
+                         "A4Landscape" = "A4Landscape",
+                         "A4Portrait" = "A4Portrait",
+                         "Custom Landscape"=list(
+                           width= 1800,
+                           height= 700,
+                           name = "A custom landscape size tooltip",
+                           className= 'customCssClass'),
+                         "Custom Portrait"=list(
+                           width= 700,
+                           height= 1800,
+                           name = "A custom portrait size tooltip",
+                           className= 'customCssClass1')
+        ),
+        customWindowTitle = "Some Fancy Title",
+        customSpinnerClass = "shiny-spinner-placeholder",
+        spinnerBgColor = "#b48484"
       )) 
     }else{
       leaflet(options = leafletOptions(zoomControl = FALSE, 
@@ -71,8 +102,23 @@ server <- function(input, output, session) {
             setView = TRUE))%>% 
         addSearchOSM(options = searchOptions(autoCollapse = FALSE, minLength = 2))%>%
       addEasyprint(options = easyprintOptions(
+        dpi = input$dpi,
+        title = 'Give me that map',
+        position = 'bottomleft',
         exportOnly = TRUE,
-        hidden = TRUE
+        # hideClasses = list("leaflet-overlay-pane", "leaflet-popup"),
+         hidden = TRUE, hideControlContainer = TRUE,
+        filename = "mapit",
+        tileLayer = "basemap",
+        tileWait = 5000,
+        defaultSizeTitles = list(
+          "CurrentSize" = "The current map extent",
+          "A4Landscape" = "A4 (Landscape) extent with w:1045, h:715",
+          "A4Portrait" = "A4  (Portrait) extent with w:715, h:1045"
+        ),
+        customWindowTitle = "Some Fancy Title",
+        customSpinnerClass = "shiny-spinner-placeholder",
+        spinnerBgColor = "#b48484"
       ))
     }
   }) 
@@ -137,7 +183,7 @@ server <- function(input, output, session) {
 
     observeEvent(input$print, {
       leafletProxy("map", session) %>%
-        easyprintMap(sizeModes = input$scene, filename = paste0("BarrioMap_scale_1:", input$scale))
+        easyprintMap(sizeModes = input$scene, filename = paste0("BarrioMap_scale_1_", input$scale), dpi = input$dpi)
     })  
 
 }

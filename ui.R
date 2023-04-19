@@ -55,9 +55,7 @@ ui <- navbarPage("Barrio Map",
                               textOutput("scaleL")
                             ),
                             mainPanel(
-                              #uiOutput("leaf")
-                              leaflet::leafletOutput("map", height = "500px", width = "100%"),
-                              uiOutput("mapjs")
+                              leaflet::leafletOutput("map", height = "500px", width = "500px"),
                               #leaflet::leafletOutput("map", height = "2480px", width = "3508px")
                             )
                           )),
