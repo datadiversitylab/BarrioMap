@@ -49,7 +49,7 @@ server <- function(input, output, session) {
             autoCenter = TRUE,
             setView = TRUE))%>%
       addEasyprint(options = easyprintOptions(
-        dpi = input$dpi,
+        #dpi = input$dpi,
         title = 'Give me that map',
         position = 'bottomleft',
         exportOnly = TRUE,
@@ -102,7 +102,7 @@ server <- function(input, output, session) {
             setView = TRUE))%>% 
         addSearchOSM(options = searchOptions(autoCollapse = FALSE, minLength = 2))%>%
       addEasyprint(options = easyprintOptions(
-        dpi = input$dpi,
+        #dpi = input$dpi,
         title = 'Give me that map',
         position = 'bottomleft',
         exportOnly = TRUE,
@@ -175,8 +175,6 @@ server <- function(input, output, session) {
     # Render the new map with updated view and rectangle coordinates
    leafletProxy("map", session) %>%
       setView(lng = rv$lng, lat = rv$lat, zoom = zl) 
-  
-
 })
 
 # DPI support: https://github.com/trafficonese/leaflet.extras2/blob/print_dpi/R/easyprint.R
