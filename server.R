@@ -26,7 +26,9 @@ server <- function(input, output, session) {
     pageW = 2480,
     vpages = 1,
     hpages = 1,
-    scale = 5840
+    scale = 5840,
+    page = "a4",
+    usecoordinates = TRUE
   )
   
   # Update reactive values when UI elements are modified
@@ -37,9 +39,10 @@ server <- function(input, output, session) {
   observeEvent(input$pageW, { rv$pageW <- input$pageW })
   observeEvent(input$vpages, { rv$vpages <- input$vpages })
   observeEvent(input$hpages, { rv$hpages <- input$hpages })
+  observeEvent(input$page, { rv$page <- input$page })
   observeEvent(input$scale, { rv$scale <- input$scale })
+  observeEvent(input$usecoordinates, { rv$usecoordinates <- input$usecoordinates })
   
-
   #Render the initial map
   output$map <- leaflet::renderLeaflet({
     if(input$usecoordinates){
@@ -86,13 +89,35 @@ server <- function(input, output, session) {
     if(input$usecoordinates == FALSE){
       shinyjs::hide("longitude")
       shinyjs::hide("latitude")
-      
     }else{
       shinyjs::show("longitude")
       shinyjs::show("latitude")
     }
   })
   
+  observeEvent(rv$page,{
+    if(rv$page != "other"){
+      shinyjs::hide("pageH")
+      shinyjs::hide("pageW")
+      
+    }else{
+      shinyjs::show("pageH")
+      shinyjs::show("pageW")
+    }
+  })
+  
+  observeEvent(input$page, {
+    if (input$page == "a4") {
+      rv$pageH <- 3508 
+      rv$pageW <- 2480
+    } else if (input$page == "a3") {
+      rv$pageH <- 3508
+      rv$pageW <- 4961
+    } else {
+      rv$pageH <- input$pageH
+      rv$pageW <- input$pageW
+    }
+  })
   
   observe({
     updateNumericInput(session = session,
