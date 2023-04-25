@@ -33,18 +33,13 @@ ui <- navbarPage("Barrio Map",
                             sidebarPanel(
                               shinyjs::useShinyjs(),
                               checkboxInput("usecoordinates", "Define coordinates?", TRUE),
-                              #input lat lng
                               numericInput("latitude", "Latitude", value = 0),
                               numericInput("longitude", "Longitude", value = 0), 
                               numericInput("dpi", "DPI", value = 150), 
-                              selectInput("page", "Page size",
-                                          c("A3" = "a3",
-                                            "A4" = "a4"),
-                                          selected = "a4"),
-                              selectInput("orientation", "Page orientation",
-                                          c("Horizontal" = "h",
-                                            "Vertical" = "v"),
-                                          selected = "v"),
+                              numericInput("pageH", "Page height",
+                                           value = 3508),
+                              numericInput("pageW", "Page width",
+                                           value = 2480),
                               numericInput("vpages", "Number of vertical pages", value = 1, min =1),
                               numericInput("hpages", "Number of horizontal pages", value = 1, min =1),
                               # Scale selection box
@@ -54,14 +49,8 @@ ui <- navbarPage("Barrio Map",
                                                       "1:384" = 384
                                           )
                               ),
-                              
-                              #Some text in the app for testing
-                              textOutput("zoomL"),
-                              textOutput("resolutionL"),
-                              textOutput("scaleL"),
-                              
                               #button
-                              actionButton("refresh", "Refresh"),
+                              actionButton("print", "Print"),
                             ),
                             mainPanel(
                               leaflet::leafletOutput("map", height = "100%", width = "100%")
