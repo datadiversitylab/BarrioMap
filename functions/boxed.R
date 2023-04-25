@@ -15,8 +15,6 @@ recMap <- leaflet(width = 2480, height = 3508) %>%
   setView(lng = -110.9742, lat = 32.2540, zoom = 10) 
 recMap
 
-nRecLon = 4
-nRecVert = 3
 
 adjustlong <- function(map = recMap,  nRecLon){
   
@@ -40,7 +38,7 @@ adjustlong <- function(map = recMap,  nRecLon){
     }
     limits <- sort(c(unlist(boundaries_west), unlist(boundaries_east)))
     
-
+    
   }else{ 
     #If nRecLon is odd
     boundaries_west <- list()
@@ -64,7 +62,7 @@ adjustlong <- function(map = recMap,  nRecLon){
   }
   
   limits
-
+  
 }
 adjustlat <- function(map = recMap,  nRecVert){
   
@@ -116,15 +114,52 @@ adjustlat <- function(map = recMap,  nRecVert){
 }
 
 
-lng <- adjustlong(map = recMap,  nRecLon = nRecLon)
-lat <- adjustlat(map = recMap,  nRecVert = nRecVert)
+nRecLon = 4
+nRecVert = 3
 
-rectangles <- do.call(rbind,lapply(1:(nRecLon), function(i){
- do.call(rbind, lapply(1:nRecVert, function(j) {
-  c(lng[c(i, i+1)], lat[c(j, j+1)])
-  }))
-}))
+returnRectangles <- function(map = recMap, nRecLon, nRecVert ){
+  if(nRecLon > 1 & nRecVert > 1) {
+    lng <- adjustlong(map = recMap,  nRecLon = nRecLon)
+    lat <- adjustlat(map = recMap,  nRecVert = nRecVert)
+    
+    rectangles <- do.call(rbind,lapply(1:(nRecLon), function(i){
+      do.call(rbind, lapply(1:nRecVert, function(j) {
+        c(lng[c(i, i+1)], lat[c(j, j+1)])
+      }))
+    }))
+    rectangles
+  }else{
+    
+    if(nRecLon ==1){
+      lng <- getBox(recMap)[1:2]
+      lat <- adjustlat(map = recMap,  nRecVert = nRecVert)
+      
+      rectangles <- do.call(rbind,lapply(1:(nRecLon), function(i){
+        do.call(rbind, lapply(1:nRecVert, function(j) {
+          c(lng[c(i, i+1)], lat[c(j, j+1)])
+        }))
+      }))
+      rectangles
+    }else{
+      lng <- adjustlong(map = recMap,  nRecLon = nRecLon) 
+      lat <- getBox(recMap)[3:4]
+      
+      rectangles <- do.call(rbind,lapply(1:(nRecLon), function(i){
+        do.call(rbind, lapply(1:nRecVert, function(j) {
+          c(lng[c(i, i+1)], lat[c(j, j+1)])
+        }))
+      }))
+      rectangles
+    }
+    
+  }
+  return(rectangles)
+}
 
-rectangles
+returnRectangles(map = recMap, nRecLon =2, nRecVert=1)
+returnRectangles(map = recMap, nRecLon =2, nRecVert=2)
+returnRectangles(map = recMap, nRecLon =1, nRecVert=2)
+
+
 
 
