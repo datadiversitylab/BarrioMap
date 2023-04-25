@@ -45,6 +45,8 @@ ui <- navbarPage("Barrio Map",
                                           c("Horizontal" = "h",
                                             "Vertical" = "v"),
                                           selected = "v"),
+                              numericInput("vpages", "Number of vertical pages", value = 1, min =1),
+                              numericInput("hpages", "Number of horizontal pages", value = 1, min =1),
                               # Scale selection box
                               selectInput("scale", "Define scale (1:x m)", 
                                           choices = c("1:5,840" = 5840, 

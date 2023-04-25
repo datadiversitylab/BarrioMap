@@ -13,6 +13,7 @@ library(shinyjs)
 #Load components
 source('ui.R')
 source('server.R')
+source('functions/functions.R')
 
 #Run the app
 shinyApp(ui, server)

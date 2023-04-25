@@ -13,21 +13,8 @@ library(leaflet.extras)
 library(shinyjs)
 library(htmlwidgets)
 
-
-getBox <- function(m){
-  view <- m$x$setView
-  lat <- view[[1]][1]
-  lng <- view[[1]][2]
-  zoom <- view[[2]]
-  zoom_width <- 360 / 2^zoom
-  lng_width <- m$width / 256 * zoom_width
-  lat_height <- m$height / 256 * zoom_width
-  return(c(lng - lng_width/2, lng + lng_width/2, lat - lat_height/2, lat + lat_height/2))
-}
-
-
 server <- function(input, output, session) {
-  
+
   observeEvent(input$page, {
     # page information
     if(input$page == "a4"){
@@ -129,28 +116,24 @@ server <- function(input, output, session) {
     ## Estimate the zoom level for a given scale
     zl <- log2(input$dpi * 1/0.0254 * 156543.03 * cos(input$map_center$lat) / as.numeric(input$scale) )
     
-    
     #Make a map for the rectangle
     recMap <- leaflet(width = width_map, height = height_map) %>%
       addTiles() %>%
       setView(lng = input$map_center$lng, lat = input$map_center$lat, zoom = zl) 
     
     # Estimate the bounding box
-    coords <- getBox(recMap)
-    
-    lng1= coords[2] #east
-    lng2= coords[1] #west
-    lat2= coords[3] #south
-    lat1= coords[4] #north
+    rects <- returnRectangles(map = recMap, nRecLon = input$hpages, nRecVert = input$vpages)
     
     # Render the new map with updated view and rectangle coordinates
+    for(i in 1:nrow(rects)){
     leafletProxy("map") %>%
-      #setView(lng = rv$lng, lat = rv$lat, zoom = zl) %>% 
       clearShapes() %>%
       addRectangles(
-        lng1=lng1, lat1=lat1,
-        lng2=lng2, lat2=lat2,
-        fillColor = "transparent") 
+        lng1=rects[i,1], lat1=rects[i,3],
+        lng2=rects[i,2], lat2=rects[i,4],
+        fillColor = "transparent")
+    }
+    
   })
   
   # Update rectangle coordinates when the map view changes
@@ -166,23 +149,20 @@ server <- function(input, output, session) {
         setView(lng = input$map_center$lng, lat = input$map_center$lat, zoom = zl)
       
       # Estimate the bounding box
-      coords <- getBox(recMap)
-      
-      print(coords)
-      print(input$map_bounds)
-      
-      lng1= coords[2] #east
-      lng2= coords[1] #west
-      lat2= coords[3] #south
-      lat1= coords[4] #north
+      rects <- returnRectangles(map = recMap, nRecLon = input$hpages, nRecVert = input$vpages)
+      print(rects)
       
       # Update the rectangle coordinates
-      leafletProxy("map") %>%
-        clearShapes() %>%
+      proxy <- leafletProxy("map") %>%
+        clearShapes()
+      for(i in 1:nrow(rects)){
+        proxy %>%
         addRectangles(
-          lng1=lng1, lat1=lat1,
-          lng2=lng2, lat2=lat2,
+          lng1=rects[i,1], lat1=rects[i,3],
+          lng2=rects[i,2], lat2=rects[i,4],
           fillColor = "transparent")
+      }
+
     }
     
   })
