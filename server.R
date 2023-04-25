@@ -13,6 +13,9 @@ library(leaflet.extras)
 library(shinyjs)
 library(htmlwidgets)
 
+source('functions/functions.R')
+
+
 server <- function(input, output, session) {
 
   observeEvent(input$page, {

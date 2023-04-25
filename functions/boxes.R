@@ -1,4 +1,4 @@
-
+library(leaflet)
 
 recMap <- leaflet(width = 2480, height = 3508) %>%
   addTiles() %>%

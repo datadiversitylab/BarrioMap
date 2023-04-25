@@ -124,29 +124,29 @@ returnRectangles <- function(map = recMap, nRecLon, nRecVert ){
     }))
     rectangles
   }
-
-    if(nRecLon ==1 & nRecVert >1){
-      lng <- getBox(map)[1:2]
-      lat <- adjustlat(map = map,  nRecVert = nRecVert)
-      
-      rectangles <- do.call(rbind,lapply(1:(nRecLon), function(i){
-        do.call(rbind, lapply(1:nRecVert, function(j) {
-          c(lng[c(i, i+1)], lat[c(j, j+1)])
-        }))
-      }))
-      rectangles
-    }
-    if(nRecLon > 1 & nRecVert == 1) {
-      lng <- adjustlong(map = map,  nRecLon = nRecLon) 
-      lat <- getBox(map)[3:4]
-      
-      rectangles <- do.call(rbind,lapply(1:(nRecLon), function(i){
-        do.call(rbind, lapply(1:nRecVert, function(j) {
-          c(lng[c(i, i+1)], lat[c(j, j+1)])
-        }))
-      }))
-      rectangles
-    }
+  
+  if(nRecLon ==1 & nRecVert >1){
+    lng <- getBox(map)[1:2]
+    lat <- adjustlat(map = map,  nRecVert = nRecVert)
     
+    rectangles <- do.call(rbind,lapply(1:(nRecLon), function(i){
+      do.call(rbind, lapply(1:nRecVert, function(j) {
+        c(lng[c(i, i+1)], lat[c(j, j+1)])
+      }))
+    }))
+    rectangles
+  }
+  if(nRecLon > 1 & nRecVert == 1) {
+    lng <- adjustlong(map = map,  nRecLon = nRecLon) 
+    lat <- getBox(map)[3:4]
+    
+    rectangles <- do.call(rbind,lapply(1:(nRecLon), function(i){
+      do.call(rbind, lapply(1:nRecVert, function(j) {
+        c(lng[c(i, i+1)], lat[c(j, j+1)])
+      }))
+    }))
+    rectangles
+  }
+  
   return(rectangles)
 }
