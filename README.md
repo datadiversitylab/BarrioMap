@@ -1,27 +1,19 @@
 # Barrio Map: OSM for community mapping
 
-Project Title: Barrio Map - A simple web application to bridge between Open Access Mapping and Formal Planning Efforts
+## A Shiny web application to bridge between Open Access Mapping and Formal Planning Efforts
 
 
-Project abstract: Citizen-driven mapping and open source mapping (OSM) have rapidly influenced the quality and quantity of geo-information available for planning and design decisions. Despite the numerous opportunities to support current built environment design and planning practices, uptake in professional and academic work has been hindered. This delay occurs in part due to fundamental functionality gaps with OSM that divide it from traditional planning practices. Here, we aim to generate an open access tool that enables the formal description of resolution, distances, and scales in static maps under an open source framework. The resulting maps are intended to further close the gap between citizens and decision makers, to add quantitative geo-referenced data to grassroots knowledge. The individuals and communities that are closest to the problems caused by environmental justice and spatial inequity are also those that can drive long term solutions.  Proprietary software does not benefit from existing citizen data and limits new contributions of the ongoing and direct community mapping efforts. Development of tools that allow for easy access and use along with high performance and functionality holds the potential to change the way planners work.
+### Overview of the app
+
+If you are searching for a simple map for community projects, this is the place. Made with urban planners, architects, and designers in mind, BarrioMaps will let you print to typical scales used in planning / design (1”=50’, etc.), print large sheet sizes (24”x36”, etc.), export in easily edited formats (pdf and vectors). Barrio Map with the goal of bridging the gap between open access mapping and formal planning efforts. Whether you’re an architecture student or a community member with a grassroots project, BarrioMap was made for you. 
+
+### Technical Details
+If you want to hear about the code, Barrio Map offers fundamental functionalities like finding locations by conducting searches or selecting coordinates. Users can select from predefined scales and export  the scaled maps to particular page sizes. Maps generated using Barrio Map are formal descriptions of particular sites with defined values of resolution, scales, and explicit information on distances. Barrio Map, in conjunction with OpenStreetMaps, is written in R, with functionalities largely leveraged from packages such as Leaflet and Shiny. 
 
 
+### Why “Barrio Map”, why open source?
+Traditional planning practices rely on licensed software to filter and interpret information from open source maps. The process of using open software for formal mapping is time-consuming and complex. Thus, only professionals have access to the necessary skills and software. Barrio Map is a comprehensive open source web-based mapping toolbox designed to bridge the gap between citizens and decision makers and add quantitative geo-referenced data to grassroots knowledge. The BarrioMap team believes that information is power, and should be accessible to all.
 
-Project significance: We aim to generate an open source tool that extends the functionality of existing open access software (e.g., Newman et al. 2010) to enable the formal description of resolution, distances, and scales in static maps. The resulting software implementation is expected to be comprehensive enough to generate maps that follow the fundamental practices in traditional planning. Maps exported from this tool are particularly intended to be used by citizens to inform community-level decisions and further communicate with practitioners and policymakers on planning related-issues (e.g., Newman et al. 2010; Johnson et al. 2014).
+### Contribuiting
 
-
-
-Credits to the project:
-
-Sponsor: University of Arizona, College of Architecture, Planning & Landscape Architecture
-
-Contributors:
-
-Mackenzie Waller
-University of Arizona, Department of Landscape Architecture
-
-Cristian Román-Palacios
-University of Arizona, Assistant Professor of Practice, UArizona School of Information
-
-Sarthak Haldar
-University of Arizona, Graduate Student Data Science,  UArizona School of Information
+Please review the information we have created in [CONTRIBUITING](CONTRIBUITING.md).
