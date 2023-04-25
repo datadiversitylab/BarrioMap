@@ -40,6 +40,7 @@ server <- function(input, output, session) {
   observeEvent(input$vpages, { rv$vpages <- input$vpages })
   observeEvent(input$hpages, { rv$hpages <- input$hpages })
   observeEvent(input$page, { rv$page <- input$page })
+  observeEvent(input$orientation, { rv$orientation <- input$orientation })
   observeEvent(input$scale, { rv$scale <- input$scale })
   observeEvent(input$usecoordinates, { rv$usecoordinates <- input$usecoordinates })
   
@@ -99,20 +100,38 @@ server <- function(input, output, session) {
     if(rv$page != "other"){
       shinyjs::hide("pageH")
       shinyjs::hide("pageW")
-      
+      shinyjs::show("orientation")
+
     }else{
       shinyjs::show("pageH")
       shinyjs::show("pageW")
+      shinyjs::hide("orientation")
+      
     }
   })
   
-  observeEvent(input$page, {
+  observeEvent(list(input$page,
+                    input$orientation), {
     if (input$page == "a4") {
+      if (input$orientation == "v"){
       rv$pageH <- 3508 
       rv$pageW <- 2480
+      }else{
+        rv$pageW <- 3508 
+        rv$pageH <- 2480
+      }
+      
     } else if (input$page == "a3") {
+      
+      if (input$orientation == "v"){
       rv$pageH <- 3508
       rv$pageW <- 4961
+      }else{
+        rv$pageW <- 3508
+        rv$pageH <- 4961
+      }
+      
+      
     } else {
       rv$pageH <- input$pageH
       rv$pageW <- input$pageW

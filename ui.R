@@ -41,6 +41,10 @@ ui <- navbarPage("Barrio Map",
                                                       "A3" = "a3",
                                                       "Other" = "other")
                                           ),
+                              selectInput("orientation", "Page orientation", 
+                                          choices = c("Vertical" = "v", 
+                                                      "Horizontal" = "h")
+                              ),
                               numericInput("pageH", "Page height",
                                            value = 3508),
                               numericInput("pageW", "Page width",
