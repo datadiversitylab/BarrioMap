@@ -1,5 +1,3 @@
-#devtools::install_github("trafficonese/leaflet.extras2", ref = "print_dpi")
-
 #Load the relevant libraries
 library(shiny)
 library(leaflet)

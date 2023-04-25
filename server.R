@@ -28,24 +28,24 @@ getBox <- function(m){
 
 server <- function(input, output, session) {
   
-observeEvent(input$page, {
-  # page information
-  if(input$page == "a4"){
-    width_map  <<- 2480
-    height_map <<- 3508
-  }
-  
-  if(input$page == "a3"){
-    width_map  <<- 4961
-    height_map <<- 3508
-  }
-  
-  width_map_or <<- width_map
-  height_map_or <<- height_map
-})
+  observeEvent(input$page, {
+    # page information
+    if(input$page == "a4"){
+      width_map  <<- 2480
+      height_map <<- 3508
+    }
+    
+    if(input$page == "a3"){
+      width_map  <<- 4961
+      height_map <<- 3508
+    }
+    
+    width_map_or <<- width_map
+    height_map_or <<- height_map
+  })
   
   observeEvent(input$orientation, {
-
+    
     if(input$orientation == "v"){
       width_map  <<- width_map_or
       height_map <<- height_map_or
@@ -54,7 +54,7 @@ observeEvent(input$page, {
       width_map  <<- height_map_or
       height_map <<- width_map_or
     }
-
+    
   })
   
   # Reactive values for latitude and longitude
@@ -123,23 +123,20 @@ observeEvent(input$page, {
                        value = input$map_center$lat)
   })
   
-
+  
   observeEvent(input$refresh, {
     
     ## Estimate the zoom level for a given scale
     zl <- log2(input$dpi * 1/0.0254 * 156543.03 * cos(input$map_center$lat) / as.numeric(input$scale) )
-
+    
     
     #Make a map for the rectangle
     recMap <- leaflet(width = width_map, height = height_map) %>%
       addTiles() %>%
       setView(lng = input$map_center$lng, lat = input$map_center$lat, zoom = zl) 
-
+    
     # Estimate the bounding box
     coords <- getBox(recMap)
-    
-    print(coords)
-    print(input$map_bounds)
     
     lng1= coords[2] #east
     lng2= coords[1] #west
@@ -147,7 +144,7 @@ observeEvent(input$page, {
     lat1= coords[4] #north
     
     # Render the new map with updated view and rectangle coordinates
-   leafletProxy("map") %>%
+    leafletProxy("map") %>%
       #setView(lng = rv$lng, lat = rv$lat, zoom = zl) %>% 
       clearShapes() %>%
       addRectangles(
@@ -155,11 +152,6 @@ observeEvent(input$page, {
         lng2=lng2, lat2=lat2,
         fillColor = "transparent") 
   })
-  
-  
-
-  
-  
   
   # Update rectangle coordinates when the map view changes
   observe({
@@ -194,12 +186,5 @@ observeEvent(input$page, {
     }
     
   })
-
-
-  
-
-
-  
-
   
 }

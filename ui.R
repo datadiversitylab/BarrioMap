@@ -5,16 +5,30 @@
 # Used to define the graphical aspects of the app.
 ###################
 
-ui <- navbarPage("ComMappeR",
+ui <- navbarPage("Barrio Map",
                  theme = bslib::bs_theme(version = 4, bootswatch = "minty"), #https://bootswatch.com/
                  tabPanel("Welcome",
                           br(),
-                          h4("Welcome to ComMappeR!", align = "center"),
+                          h4("Welcome to Barrio Map!", align = "center"),
                           br(),
-                          h6("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Est pellentesque elit ullamcorper dignissim cras. Mauris pellentesque pulvinar pellentesque habitant morbi tristique senectus. Dui nunc mattis enim ut. In iaculis nunc sed augue lacus viverra vitae congue eu. Morbi tristique senectus et netus et. Ultrices eros in cursus turpis massa tincidunt dui ut. Turpis nunc eget lorem dolor sed viverra ipsum nunc. Facilisis sed odio morbi quis. Amet massa vitae tortor condimentum lacinia quis vel eros donec. Non quam lacus suspendisse faucibus interdum posuere. Tempus iaculis urna id volutpat lacus laoreet non curabitur. Pharetra massa massa ultricies mi quis hendrerit dolor magna. Faucibus et molestie ac feugiat sed lectus vestibulum mattis. Elementum nisi quis eleifend quam adipiscing. Accumsan tortor posuere ac ut. A lacus vestibulum sed arcu non odio euismod lacinia.", align = "center"),
-                          h6("Turpis egestas integer eget aliquet nibh praesent tristique. Porta lorem mollis aliquam ut porttitor. Eget sit amet tellus cras adipiscing enim eu. In metus vulputate eu scelerisque. Nam at lectus urna duis convallis convallis tellus id. Ultrices dui sapien eget mi proin sed libero. Tortor condimentum lacinia quis vel eros donec ac odio. Ornare quam viverra orci sagittis eu volutpat odio. Senectus et netus et malesuada fames ac. Convallis a cras semper auctor neque vitae tempus quam. At risus viverra adipiscing at in tellus. Pellentesque adipiscing commodo elit at imperdiet dui. Placerat duis ultricies lacus sed. Risus nullam eget felis eget nunc lobortis mattis aliquam. Donec ultrices tincidunt arcu non sodales neque sodales. Sollicitudin nibh sit amet commodo nulla facilisi. Dis parturient montes nascetur ridiculus mus mauris. Eget lorem dolor sed viverra. Platea dictumst vestibulum rhoncus est pellentesque elit ullamcorper dignissim.", align = "center")
-                          ),
+                          h6("If you are searching for a simple map for community projects, this is the place. Made with urban planners, architects, and designers in mind, BarrioMaps will let you print to typical scales used in planning / design (1”=50’, etc.), print large sheet sizes (24”x36”, etc.), export in easily edited formats (pdf and vectors). Barrio Map with the goal of bridging the gap between open access mapping and formal planning efforts. Whether you’re an architecture student or a community member with a grassroots project, BarrioMap was made for you!", align = "center"),
+                          br(),
+                          h5("Technical Details:"),
+                          h6("If you want to hear about the code, Barrio Map offers fundamental functionalities like finding locations by conducting searches or selecting coordinates. Users can select from predefined scales and export  the scaled maps to particular page sizes. Maps generated using Barrio Map are formal descriptions of particular sites with defined values of resolution, scales, and explicit information on distances. Barrio Map, in conjunction with OpenStreetMaps, is written in R, with functionalities largely leveraged from packages such as Leaflet and Shiny."),
+                          br(),
+                          h5("Why Barrio Map? why open source?"),
+                          h6("Traditional planning practices rely on licensed software to filter and interpret information from open source maps. The process of using open software for formal mapping is time-consuming and complex. Thus, only professionals have access to the necessary skills and software."),
+                          h6("Barrio Map is a comprehensive open source web-based mapping toolbox designed to bridge the gap between citizens and decision makers and add quantitative geo-referenced data to grassroots knowledge. The BarrioMap team believes that information is power, and should be accessible to all.")
+                 ),
                  tabPanel("Create your map!",
+                          h5("Build and export your own maps in five easy steps:", align = "center"),
+                          tags$ul(
+                            tags$li("Select your location. Define specific coordinates (i.e. Longitude and Latitude) or use a search bar in map by unchecking ‘define coordinates’."), 
+                            tags$li("Pick a scale and DPI. Working on a building size site, then 1”=30’."), 
+                            tags$li("Choose a page size."), 
+                            tags$li("Click refresh"),
+                            tags$li("Print the map!")
+                          ),
                           sidebarLayout(
                             sidebarPanel(
                               shinyjs::useShinyjs(),
@@ -36,9 +50,9 @@ ui <- navbarPage("ComMappeR",
                                           choices = c("1:5,840" = 5840, 
                                                       "1:600" = 600,
                                                       "1:384" = 384
-                                                      )
-                                          ),
-
+                                          )
+                              ),
+                              
                               #Some text in the app for testing
                               textOutput("zoomL"),
                               textOutput("resolutionL"),
@@ -48,20 +62,48 @@ ui <- navbarPage("ComMappeR",
                               actionButton("refresh", "Refresh"),
                             ),
                             mainPanel(
-                              leaflet::leafletOutput("map", height = "500px", width = "100%")
+                              leaflet::leafletOutput("map", height = "100%", width = "100%")
                             )
                           )),
                  tabPanel("About us",
                           br(),
                           h4("About us", align = "center"),
                           br(),
-                          h6("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Laoreet suspendisse interdum consectetur libero. Sollicitudin aliquam ultrices sagittis orci a scelerisque purus semper. Integer feugiat scelerisque varius morbi enim nunc faucibus a pellentesque. Ultrices sagittis orci a scelerisque. Aliquam etiam erat velit scelerisque in dictum non consectetur. Vestibulum lectus mauris ultrices eros in cursus turpis massa tincidunt. Pharetra magna ac placerat vestibulum lectus mauris ultrices eros. Varius quam quisque id diam vel quam elementum. Egestas tellus rutrum tellus pellentesque eu tincidunt tortor aliquam. Varius quam quisque id diam vel quam elementum pulvinar. Fermentum posuere urna nec tincidunt.", align = "center"),
-                          h6("Id donec ultrices tincidunt arcu non sodales neque sodales. Mi proin sed libero enim sed faucibus. Cursus sit amet dictum sit amet. Aliquam eleifend mi in nulla posuere sollicitudin. Blandit libero volutpat sed cras ornare. Duis at tellus at urna. Turpis egestas integer eget aliquet nibh praesent tristique magna. Feugiat in fermentum posuere urna. Sociis natoque penatibus et magnis dis. At in tellus integer feugiat. Luctus accumsan tortor posuere ac ut consequat semper. Quis commodo odio aenean sed. Magna etiam tempor orci eu lobortis elementum. Egestas dui id ornare arcu. Proin fermentum leo vel orci porta non pulvinar. Velit euismod in pellentesque massa placerat. Pellentesque diam volutpat commodo sed egestas egestas fringilla phasellus. Eu augue ut lectus arcu bibendum at. Pellentesque sit amet porttitor eget dolor morbi non.", align = "center"),
-                          h6("Mi tempus imperdiet nulla malesuada. Adipiscing commodo elit at imperdiet dui accumsan sit. Fermentum odio eu feugiat pretium nibh ipsum consequat nisl vel. Nulla pellentesque dignissim enim sit amet venenatis urna cursus eget. Eu facilisis sed odio morbi quis commodo odio. Gravida arcu ac tortor dignissim convallis aenean. Aliquam sem et tortor consequat id porta nibh venenatis cras. Etiam erat velit scelerisque in dictum non consectetur. Dolor sit amet consectetur adipiscing elit pellentesque. Eget nullam non nisi est sit amet facilisis magna etiam. Vestibulum mattis ullamcorper velit sed ullamcorper morbi tincidunt ornare massa. Lorem donec massa sapien faucibus et molestie. Facilisis sed odio morbi quis commodo odio aenean sed. Semper risus in hendrerit gravida rutrum quisque. Tortor consequat id porta nibh venenatis cras. Volutpat blandit aliquam etiam erat velit. Commodo viverra maecenas accumsan lacus vel. Lorem mollis aliquam ut porttitor leo a diam. Nunc id cursus metus aliquam eleifend. Suspendisse faucibus interdum posuere lorem ipsum dolor sit amet.", align = "center")
+                          tags$ul(
+                            tags$li("Sarthak Haldar: Sarthak is currently a Graduate Student of Data Science at the School of Information at the University of Arizona. Sarthak is involved in tasks related to implementing Machine Learning, Deep Learning Algorithms and Libraries, NLP, Data Mining concepts for processing datasets, and also performing data analysis by creating pivot tables and creating visualizations."),
+                            tags$li("Mackenzie Waller: Mackenzie Waller is a landscape architect, urban designer and assistant professor at the College of Architecture, Planning and Landscape Architecture at the University of Arizona. Her work centers on environmental and spatial justice in the urban built environment. Her current research interests explore how the mediums of story, wildlife and play can serve as strategies to co-create desired futures. Her project experience began in environmental restoration and expanded to interdisciplinary approaches to neighborhood and urban public space design."),
+                            tags$li("Cristian Roman-Palacios: Cristian is currently an Assistant Professor of Practice at the School of Information at the University of Arizona. Cristian uses statistics, bioinformatics, and machine learning to answer questions, primarily at the interface between ecology and evolution. However, he has recently started exploring more applied research that combines machine learning, GIS, and the creation of tools with direct applications on society.")
+                          ),
+                          br(),
+                          h5("Acknowledgements"),
+                          h6("Hosting Barrio Map wouldn’t be possible without the support of sponsor: University of Arizona who donate their funding, hosting space or hardware to accomplish the target.", align = "center")
                  ),
                  navbarMenu("More",
-                            tabPanel("GitHub"),
-                            tabPanel("Additional resources"))
+                            tabPanel("GitHub",
+                                     br(),
+                                     h4("GitHub", align = "center"),
+                                     br(),
+                                     h5("Barrio Map is an open-source web application for mapping and formal planning. Barrio Map is designed with simplicity, performance and usability in mind. It works efficiently across all major desktop and mobile platforms. The source code can be found at Github. You will need RStudio to run the application locally."), 
+                                     tags$ul(
+                                       tags$li("Create a New Project on RStudio and Select Version Control -> Git."),
+                                       tags$li("Paste the repository link to import the relevant files."),
+                                       tags$li("Run App")
+                                     ),
+                                     h5("You can also be a part of the project and help us by Creating Pull requests, providing feedback, reporting bugs, improving documentation and spreading the word about Barrio Map to your friends.")
+                            ),
+                            tabPanel("Additional resources",
+                                     br(),
+                                     h4("Additional resources", align = "center"),
+                                     br(),
+                                     h5("Please find other relevant applications available online:"),
+                                     tags$ul(
+                                       tags$li("RapiD (https://mapwith.ai/) : Uses artificial intelligence to predict features on high-resolution satellite imagery, these features are then populated in our RapiD map editing tool. It features AI based road layering. However users do need an official OSM account to use the tool. BarrioMap mitigates any hassle of creating an account."), 
+                                       tags$li("Inkatlas (https://inkatlas.com/) : Allows to create own maps for print, whether its for planning a bike trip or publishing a book. It is a paid proprietary application unlike BarrioMap which is Open Souce and Free."), 
+                                       tags$li("PrintMaps (https://www.printmaps.net/ ): The Printmaps editor lets you create high resolution maps in SVG, or PNG or PSD (Adobe Photoshop) format in 300 dpi. Printing the map needs a payment unlike BarrioMap which is Open Souce and Free."),
+                                       tags$li("Milvusmap (http://milvusmap.eu/ ) : Allows to create and print maps in pdf format. This application includes very little overlap with traditional planning practices unlike BarrioMap."),
+                                       tags$li("FieldPapers ( http://fieldpapers.org/compose#10/33.5345/-111.9603): Allows to create and print maps in pdf format. This application includes very little overlap with traditional planning practices unlike BarrioMap.")
+                                     )
+                            ))
 )
 
 
