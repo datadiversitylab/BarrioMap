@@ -8,10 +8,8 @@
 library(dplyr)
 library(leaflet)
 library(shiny)
-library(leaflet.extras2)
 library(leaflet.extras)
 library(shinyjs)
-library(htmlwidgets)
 
 source('functions/functions.R')
 
