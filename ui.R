@@ -8,7 +8,7 @@
 ui <- navbarPage("Barrio Map",
                  theme = bslib::bs_theme(version = 4, bootswatch = "minty"), #https://bootswatch.com/
                  tabPanel("Welcome",
-                          useWaiter(),
+                          waiter::useWaiter(),
                           br(),
                           h4("Welcome to Barrio Map!", align = "center"),
                           br(),
