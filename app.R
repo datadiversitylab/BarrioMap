@@ -5,7 +5,11 @@ library(leaflet.extras)
 library(bslib)
 library(dplyr)
 library(shinyjs)
-
+library(osmdata)
+library(ggplot2)
+library(ggmap)
+library(sp)
+library(waiter)
 
 #Load components
 source('ui.R')

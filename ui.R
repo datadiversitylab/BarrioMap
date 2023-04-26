@@ -8,6 +8,7 @@
 ui <- navbarPage("Barrio Map",
                  theme = bslib::bs_theme(version = 4, bootswatch = "minty"), #https://bootswatch.com/
                  tabPanel("Welcome",
+                          useWaiter(),
                           br(),
                           h4("Welcome to Barrio Map!", align = "center"),
                           br(),
@@ -59,7 +60,7 @@ ui <- navbarPage("Barrio Map",
                                           )
                               ),
                               #button
-                              actionButton("print", "Print"),
+                              downloadButton("print", "Download PDF")
                             ),
                             mainPanel(
                               leaflet::leafletOutput("map", height = "100%", width = "100%")

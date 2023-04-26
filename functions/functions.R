@@ -150,3 +150,27 @@ returnRectangles <- function(map = recMap, nRecLon, nRecVert ){
   
   return(rectangles)
 }
+
+
+
+osmdata_plot <- function(bbox_df,
+                         folder = "www",
+                         prefix = "test",
+                         width = 4,
+                         height = 4) {
+  pdf(
+    file = paste0(folder, "/", prefix , ".pdf"),
+    width = width,
+    height = height,
+    onefile = TRUE
+  )
+  for (i in 1:nrow(bbox_df)) {
+    q1 <- opq(bbox = bbox_df[i,]) %>%
+      add_osm_feature(key = 'highway', value = 'cycleway')
+    cway_sev <- osmdata_sp(q1)
+    sp::plot(cway_sev$osm_lines)
+  }
+  dev.off()
+}
+
+

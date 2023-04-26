@@ -10,12 +10,22 @@ library(leaflet)
 library(shiny)
 library(leaflet.extras)
 library(shinyjs)
+library(osmdata)
+library(ggplot2)
+library(ggmap)
+library(sp)
+library(waiter)
 
 source('functions/functions.R')
 
 
 server <- function(input, output, session) {
-
+  
+  w <- Waiter$new(
+    id = "map",
+    html = spin_3(), 
+    color = transparent(.5)
+  )
   
   # Reactive values
   rv <- reactiveValues(
@@ -159,7 +169,7 @@ server <- function(input, output, session) {
       setView(lng = rv$longitude, lat = rv$latitude, zoom = zl) 
     
     # Estimate the bounding box
-    rects <- returnRectangles(map = recMap, nRecLon = rv$hpages, nRecVert = rv$vpages)
+    rects <<- returnRectangles(map = recMap, nRecLon = rv$hpages, nRecVert = rv$vpages)
     
     # Render the new map with updated view and rectangle coordinates
     for(i in 1:nrow(rects)){
@@ -185,7 +195,7 @@ server <- function(input, output, session) {
         setView(lng = rv$longitude, lat = rv$latitude, zoom = zl) 
       
       # Estimate the bounding box
-      rects <- returnRectangles(map = recMap, nRecLon = rv$hpages, nRecVert = rv$vpages)
+      rects <<- returnRectangles(map = recMap, nRecLon = rv$hpages, nRecVert = rv$vpages)
 
       # Update the rectangle coordinates
       proxy <- leafletProxy("map") %>%
@@ -198,4 +208,26 @@ server <- function(input, output, session) {
           fillColor = "transparent")
       }
   })
+  
+
+    output$print <- downloadHandler(
+      filename = "barrio.pdf",
+      content = function(file) {
+        rects2 <- cbind(
+          rects[,1],
+          rects[,3],
+          rects[,2],
+          rects[,4]
+        )
+        w$show()
+        osmdata_plot(rects2, prefix = "barrio")
+        w$hide()
+        file.copy("www/barrio.pdf", file)
+      }
+    )
+    
+  #})
+  
+  
+  
 }
