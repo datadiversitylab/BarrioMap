@@ -174,3 +174,20 @@ osmdata_plot <- function(bbox_df,
 }
 
 
+
+#Calculate the number of screen pixels that correspond to a given distance in meters
+meter2screenpixel <- function(meter, orient ="v",  zoomlevel, latitude) {
+  #Get the resolution of the map from the "this.map" object.
+  res <- 156543.03 * cos(latitude) / (2 ^ zoomlevel)
+  #https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Resolution_and_Scale
+  #metresPerPixel.v = 40075016.686 * abs(cos(latitude * pi/180)) / 2^(zoomlevel+8)
+  metresPerPixel.h = 40075016.686 * abs(cos(latitude * pi/180)) / 2^(zoomlevel+8)
+  #metresPerPixel.h = 40075016.686 / 2^(zoomlevel+8)
+  metresPerPixel.v = 40075016.686 / 2^(zoomlevel+8)
+  
+  ##this.map.getGeodesicPixelSize().w
+  ##this.map.getGeodesicPixelSize().h
+  pixSizeGeodesic <- ifelse(orient == "v", metresPerPixel.v, metresPerPixel.h) * 1
+  pixel <- meter * (res / pixSizeGeodesic)
+  return(pixel)
+}

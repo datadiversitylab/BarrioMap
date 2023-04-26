@@ -31,9 +31,8 @@ server <- function(input, output, session) {
   rv <- reactiveValues(
     latitude = 32.2540,
     longitude = -110.9742,
-    dpi = 150,
-    pageH = 3508,
-    pageW = 2480,
+    pageH = 0.267,
+    pageW = 0.18,
     vpages = 1,
     hpages = 1,
     scale = 5840,
@@ -44,7 +43,6 @@ server <- function(input, output, session) {
   # Update reactive values when UI elements are modified
   observeEvent(input$latitude, { rv$latitude <- input$latitude })
   observeEvent(input$longitude, { rv$longitude <- input$longitude })
-  observeEvent(input$dpi, { rv$dpi <- input$dpi })
   observeEvent(input$pageH, { rv$pageH <- input$pageH })
   observeEvent(input$pageW, { rv$pageW <- input$pageW })
   observeEvent(input$vpages, { rv$vpages <- input$vpages })
@@ -124,21 +122,21 @@ server <- function(input, output, session) {
                     input$orientation), {
     if (input$page == "a4") {
       if (input$orientation == "v"){
-      rv$pageH <- 3508 
-      rv$pageW <- 2480
+      rv$pageH <- 0.267 
+      rv$pageW <- 0.18
       }else{
-        rv$pageW <- 3508 
-        rv$pageH <- 2480
+        rv$pageW <- 0.267 
+        rv$pageH <- 0.18
       }
       
     } else if (input$page == "a3") {
       
       if (input$orientation == "v"){
-      rv$pageH <- 3508
-      rv$pageW <- 4961
+      rv$pageH <- 0.420
+      rv$pageW <- 0.297
       }else{
-        rv$pageW <- 3508
-        rv$pageH <- 4961
+        rv$pageW <- 0.420
+        rv$pageH <- 0.297
       }
       
       
@@ -161,10 +159,15 @@ server <- function(input, output, session) {
   observe({
     
     ## Estimate the zoom level for a given scale
-    zl <- log2(rv$dpi * 1/0.0254 * 156543.03 * cos(rv$latitude) / as.numeric(rv$scale) )
-  
+    zl <- log2(591657550.5 / as.numeric(rv$scale))
+    mbox_scale = as.numeric(rv$scale)
+    pixel_v = meter2screenpixel(rv$pageH * mbox_scale, orient= "v", zl, rv$latitude)
+    pixel_h = meter2screenpixel(rv$pageW * mbox_scale, orient= "h", zl, rv$latitude)
+    
+    cat(pixel_v/pixel_h)
+    
     #Make a map for the rectangle
-    recMap <- leaflet(width = rv$pageW, height = rv$pageH) %>%
+    recMap <- leaflet(width = pixel_h, height = pixel_v) %>%
       addTiles() %>%
       setView(lng = rv$longitude, lat = rv$latitude, zoom = zl) 
     
@@ -187,10 +190,15 @@ server <- function(input, output, session) {
   observe({
     
       ## Estimate the zoom level for a given scale
-      zl <- log2(rv$dpi * 1/0.0254 * 156543.03 * cos(rv$latitude) / as.numeric(rv$scale) )
+      zl <- log2(591657550.5 / as.numeric(rv$scale))
+      mbox_scale = as.numeric(rv$scale)
+      pixel_v = meter2screenpixel(rv$pageH * mbox_scale, orient= "v", zl, rv$latitude)
+      pixel_h = meter2screenpixel(rv$pageW * mbox_scale, orient= "h", zl, rv$latitude)
+      
+      cat(pixel_v/pixel_h)
       
       #Make a map for the rectangle
-      recMap <- leaflet(width = rv$pageW, height = rv$pageH) %>%
+      recMap <- leaflet(width = pixel_h, height = pixel_v) %>%
         addTiles() %>%
         setView(lng = rv$longitude, lat = rv$latitude, zoom = zl) 
       
@@ -225,9 +233,5 @@ server <- function(input, output, session) {
         file.copy("www/barrio.pdf", file)
       }
     )
-    
-  #})
-  
-  
-  
+
 }
