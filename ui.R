@@ -14,7 +14,7 @@ ui <- navbarPage(
   title = "Barrio Map",
   theme = bslib::bs_theme(version = 4, bootswatch = "minty"),
   
-  # HOME (WELCOME) TAB
+  # HOME TAB
   tabPanel(
     "Welcome",
     fluidPage(
@@ -69,7 +69,7 @@ ui <- navbarPage(
     )
   ),
   
-  # CREATE YOUR MAP! TAB
+  # CREATE YOUR MAP TAB
   tabPanel(
     "Create your map!",
     fluidPage(
@@ -114,24 +114,6 @@ ui <- navbarPage(
       "))
       ),
       
-      # Introductory instructions in a "well"-like box
-      tags$div(
-        class = "instructions-box",
-        tags$div(
-          class = "instructions-title",
-          "Create Your Map"
-        ),
-        tags$p("Follow these five easy steps to build and export your own maps:"),
-        tags$ul(
-          class = "steps-list",
-          tags$li("Select your location. Define specific coordinates (Latitude & Longitude) or uncheck 'Define coordinates' to use the search bar."),
-          tags$li("Pick a scale and DPI (e.g. for a building-sized site, pick 1\"=30’ at 300 DPI)."),
-          tags$li("Choose a page size (A4, A3, or custom)."),
-          tags$li("Click 'Refresh' (or move the map as needed)."),
-          tags$li("Print the map!")
-        )
-      ),
-      
       # Main map container
       tags$div(
         id = "mapContainer",
@@ -146,25 +128,33 @@ ui <- navbarPage(
           
           useShinyjs(),
           
-          # Toggle for defining coordinates
-          checkboxInput("usecoordinates", "Define coordinates?", TRUE),
+          # Toggle for defining coordinates or search
+          checkboxInput("usecoordinates", "Define coordinates", TRUE),
           
           # Frame fix
           checkboxInput("fixframe", "Fix frame", value = FALSE),
           
-          # Put lat/long side by side
-          fluidRow(
-            column(
-              width = 6,
-              numericInput("latitude", "Lat", value = 0, width = "100%")
-            ),
-            column(
-              width = 6,
-              numericInput("longitude", "Lon", value = 0, width = "100%")
+          # Lat/Long inputs OR a search box, using conditionalPanel
+          conditionalPanel(
+            condition = "input.usecoordinates == true",
+            fluidRow(
+              column(
+                width = 6,
+                numericInput("latitude", "Lat", value = 0, width = "100%")
+              ),
+              column(
+                width = 6,
+                numericInput("longitude", "Lon", value = 0, width = "100%")
+              )
             )
           ),
           
-          # Basic page & orientation
+          conditionalPanel(
+            condition = "input.usecoordinates == false",
+            textInput("searchbox", "Search for a location", "")
+          ),
+          
+          # Basic page and orientation settings
           selectInput(
             "page", "Page size",
             choices = c("A4" = "a4", "A3" = "a3", "Other" = "other")
@@ -177,17 +167,17 @@ ui <- navbarPage(
           numericInput("pageH", "Page height", value = 0.267),
           numericInput("pageW", "Page width",  value = 0.18),
           
-          # "More settings" for printing only
-          checkboxInput("showMoreSettings", "More settings", FALSE),
-          
           # Scale input
           selectInput(
             "scale", "Define scale (1:x m)",
             choices = c("1:5,840" = 5840, "1:600" = 600, "1:384" = 384)
           ),
           
-          # *New* toggle for adjusting OSM layers
-          checkboxInput("showLayerSettings", "Adjust layers to export?", FALSE),
+          # Adjusting OSM layers
+          checkboxInput("showLayerSettings", "Select layers", FALSE),
+          
+          # More settings
+          checkboxInput("showMoreSettings", "More settings", FALSE),
           
           # Download PDF button
           downloadButton("print", "Download PDF", class = "btn-primary")
@@ -236,9 +226,7 @@ ui <- navbarPage(
         
       )
     )
-  )
-  
-  ,
+  ),
   
   # ABOUT US TAB
   tabPanel(
@@ -301,7 +289,7 @@ ui <- navbarPage(
                    )
                  )
                )
-             )
+    )
   )
 )
 

@@ -21,39 +21,11 @@ source('functions/functions.R')
 
 server <- function(input, output, session) {
   
-  # A helper function that converts "1 inch : scale_meters_per_inch" 
-  # into a valid Leaflet zoom level, accounting for latitude and DPI.
-  calcZoom <- function(scale_meters_per_inch, lat, dpi = 300) {
-    # Convert latitude to radians
-    phi <- lat * pi / 180
-    
-    # Web Mercator base resolution at zoom=0 (equator)
-    baseRes <- 156543.0339
-    
-    # If 1 inch = scale_meters_per_inch in reality, 
-    # and 1 inch = dpi pixels on the PDF,
-    # then we want scale_meters_per_inch / dpi meters/pixel.
-    needed_res <- scale_meters_per_inch / dpi
-    
-    # Web Mercator approximate formula:
-    # resolution(z, phi) = (baseRes * cos(phi)) / 2^z
-    # needed_res         = (baseRes * cos(phi)) / 2^z
-    # => 2^z = (baseRes * cos(phi)) / needed_res
-    # => z   = log2((baseRes * cos(phi)) / needed_res)
-    z <- log2((baseRes * cos(phi)) / needed_res)
-    
-    # Constrain zoom to typical Leaflet range
-    z <- max(min(z, 22), 0)
-    
-    return(z)
-  }
-  
   w <- Waiter$new(
     id = "map",
     html = spin_3(), 
     color = transparent(.5)
   )
-  
   # Reactive values
   rv <- reactiveValues(
     latitude = 32.2540,
@@ -67,7 +39,6 @@ server <- function(input, output, session) {
     usecoordinates = TRUE,
     dpi = 300
   )
-  
   # Update reactive values when UI elements are modified
   observeEvent(input$latitude,       { rv$latitude <- input$latitude })
   observeEvent(input$longitude,      { rv$longitude <- input$longitude })
@@ -85,35 +56,26 @@ server <- function(input, output, session) {
   output$map <- leaflet::renderLeaflet({
     if(input$usecoordinates){
       leaflet(options = leafletOptions(
-        zoomControl = TRUE,
+        zoomControl = FALSE,
         crs = leafletCRS(scales = 1),
         attributionControl = FALSE
       )) %>%
+        htmlwidgets::onRender("function(el, x) {
+        L.control.zoom({ position: 'bottomright' }).addTo(this)}") %>%
         addTiles() %>%
         addScaleBar(position = 'bottomleft') %>%
-        setView(lng = -110.9742, lat = 32.2540, zoom = 10) %>%
-        addControlGPS(options = gpsOptions(
-          position = "topright",
-          activate = TRUE, 
-          autoCenter = TRUE,
-          setView = TRUE)
-        )
+        setView(lng = -110.9742, lat = 32.2540, zoom = 10)
     } else {
       leaflet(options = leafletOptions(
-        zoomControl = TRUE,
+        zoomControl = FALSE,
         crs = leafletCRS(scales = 1),
         attributionControl = FALSE
       )) %>%
+        htmlwidgets::onRender("function(el, x) {
+        L.control.zoom({ position: 'bottomright' }).addTo(this)}") %>%
         addTiles() %>%
         addScaleBar(position = 'bottomleft') %>%
-        setView(lng = -110.9742, lat = 32.2540, zoom = 10) %>%
-        addControlGPS(options = gpsOptions(
-          position = "topright",
-          activate = TRUE, 
-          autoCenter = TRUE,
-          setView = TRUE)
-        ) %>%
-        addSearchOSM(options = searchOptions(autoCollapse = FALSE, minLength = 2))
+        setView(lng = -110.9742, lat = 32.2540, zoom = 10)
     }
   }) 
   
@@ -125,6 +87,27 @@ server <- function(input, output, session) {
     } else {
       shinyjs::show("longitude")
       shinyjs::show("latitude")
+    }
+  })
+  
+  observeEvent(input$searchbox, {
+    req(!input$usecoordinates)   # only if user is using the search approach
+    req(nzchar(input$searchbox)) # searchbox not empty
+    
+    # geocode_OSM returns lat, lon
+    coords <- tmaptools::geocode_OSM(q = input$searchbox)
+    
+    # If we got at least one geocoded result:
+    if (length(coords) > 0) {
+      # Take the first match (or any row you prefer)
+      lon <- as.numeric(coords[[2]][1])
+      lat <- as.numeric(coords[[2]][2])
+
+      # Center the leaflet map on that result:
+      leafletProxy("map") %>%
+        setView(lng = lon, lat = lat, zoom = 10)
+    } else {
+      showNotification("Could not find location. Try a different search term.")
     }
   })
   
@@ -184,37 +167,36 @@ server <- function(input, output, session) {
     )
   })
   
-  
   # First observer: draws rectangle(s) on the map
   observe({
-    # 1) Calculate the Leaflet zoom level from user scale, latitude, and DPI
+    # Calculate the Leaflet zoom level from user scale, latitude, and DPI
     zl <- calcZoom(
       scale_meters_per_inch = as.numeric(rv$scale),
       lat = rv$latitude,
       dpi = as.numeric(rv$dpi)  # or let your user input this
     )
     
-    # 2) Convert the user page size (m) into pixel dimensions for the bounding rectangle
+    # Convert the user page size (m) into pixel dimensions for the bounding rectangle
     mbox_scale <- as.numeric(rv$scale)
     pixel_v <- meter2screenpixel(rv$pageH * mbox_scale, orient = "v", zl, rv$latitude)
     pixel_h <- meter2screenpixel(rv$pageW * mbox_scale, orient = "h", zl, rv$latitude)
     
-    # Debug / sanity-check
+    # Debug
     cat("pixel ratio v/h:", pixel_v / pixel_h, "\n")
     
-    # 3) Build a small "offscreen" leaflet map to compute bounding boxes
+    # Build a small "offscreen" leaflet map to compute bounding boxes
     recMap <- leaflet(width = pixel_h, height = pixel_v) %>%
       addTiles() %>%
       setView(lng = rv$longitude, lat = rv$latitude, zoom = zl)
     
-    # 4) Use your custom returnRectangles function to compute bounding coords
+    # Use your custom returnRectangles function to compute bounding coords
     rects <<- returnRectangles(
       map = recMap,
       nRecLon = rv$hpages,
       nRecVert = rv$vpages
     )
     
-    # 5) Add these rectangle(s) to the main "map"
+    # Add these rectangle(s) to the main "map"
     leafletProxy("map") %>%
       clearShapes() %>%
       {
@@ -271,12 +253,12 @@ server <- function(input, output, session) {
     content  = function(file) {
       w$show()
       
-      # 1) Convert user's page size from meters -> inches
+      # Convert user's page size from meters -> inches
       width_in  <- rv$pageW * 39.3701
       height_in <- rv$pageH * 39.3701
       
       #
-      # 2) CREATE INSTRUCTIONS PAGE (PAGE 1)
+      # CREATE INSTRUCTIONS PAGE (PAGE 1)
       #
       instr_lines <- c("Barrio PDF Instructions:")
       # row-major logic: row = floor((i-1)/rv$hpages) + 1
@@ -325,7 +307,7 @@ server <- function(input, output, session) {
       )
       
       #
-      # 3) CREATE OVERVIEW PAGE (PAGE 2)
+      # CREATE OVERVIEW PAGE (PAGE 2)
       #
       all_lng <- c(rects[,1], rects[,2])
       all_lat <- c(rects[,3], rects[,4])
@@ -427,7 +409,7 @@ server <- function(input, output, session) {
       )
       
       #
-      # 4) CREATE EACH PANEL PAGE (page #3+)
+      # CREATE EACH PANEL PAGE (page #3+)
       #
       panel_files <- character(0)
       for (i in seq_len(nrow(rects))) {
@@ -510,7 +492,7 @@ server <- function(input, output, session) {
       }
       
       #
-      # 5) MERGE: instructions.pdf (page1) + overview.pdf (page2) + panels (page3+)
+      # MERGE: instructions.pdf (page1) + overview.pdf (page2) + panels (page3+)
       #
       tmp_files <- c("instructions.pdf", "overview.pdf", panel_files)
       qpdf::pdf_combine(input = tmp_files, output = "barrio_temp.pdf")
@@ -519,10 +501,5 @@ server <- function(input, output, session) {
       w$hide()
     }
   )
-  
-  
-  
-  
-  
 }
 

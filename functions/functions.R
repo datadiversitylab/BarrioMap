@@ -191,3 +191,31 @@ meter2screenpixel <- function(meter, orient ="v",  zoomlevel, latitude) {
   pixel <- meter * (res / pixSizeGeodesic)
   return(pixel)
 }
+
+
+# helper function that converts "1 inch : scale_meters_per_inch" 
+# into a valid Leaflet zoom level, accounting for latitude and DPI.
+calcZoom <- function(scale_meters_per_inch, lat, dpi = 300) {
+  # Convert latitude to radians
+  phi <- lat * pi / 180
+  
+  # Web Mercator base resolution at zoom=0 (equator)
+  baseRes <- 156543.0339
+  
+  # If 1 inch = scale_meters_per_inch in reality, 
+  # and 1 inch = dpi pixels on the PDF,
+  # then we want scale_meters_per_inch / dpi meters/pixel.
+  needed_res <- scale_meters_per_inch / dpi
+  
+  # Web Mercator approximate formula:
+  # resolution(z, phi) = (baseRes * cos(phi)) / 2^z
+  # needed_res         = (baseRes * cos(phi)) / 2^z
+  # => 2^z = (baseRes * cos(phi)) / needed_res
+  # => z   = log2((baseRes * cos(phi)) / needed_res)
+  z <- log2((baseRes * cos(phi)) / needed_res)
+  
+  # Constrain zoom to typical Leaflet range
+  z <- max(min(z, 22), 0)
+  
+  return(z)
+}
