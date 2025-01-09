@@ -936,6 +936,36 @@
         "Built": "R 4.4.0; ; 2024-05-31 06:28:25 UTC; unix"
       }
     },
+    "foreign": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "foreign",
+        "Priority": "recommended",
+        "Version": "0.8-86",
+        "Date": "2023-11-26",
+        "Title": "Read Data Stored by 'Minitab', 'S', 'SAS', 'SPSS', 'Stata',\n'Systat', 'Weka', 'dBase', ...",
+        "Depends": "R (>= 4.0.0)",
+        "Imports": "methods, utils, stats",
+        "Authors@R": "c(\n   person(\"R Core Team\",\n      email = \"R-core@R-project.org\", role = c(\"aut\", \"cph\", \"cre\")),\n    person(\"Roger\", \"Bivand\", role = c(\"ctb\", \"cph\")),\n    person(c(\"Vincent\", \"J.\"), \"Carey\", role = c(\"ctb\", \"cph\")),\n    person(\"Saikat\", \"DebRoy\", role = c(\"ctb\", \"cph\")),\n    person(\"Stephen\", \"Eglen\", role = c(\"ctb\", \"cph\")),\n    person(\"Rajarshi\", \"Guha\", role = c(\"ctb\", \"cph\")),\n    person(\"Swetlana\", \"Herbrandt\", role = \"ctb\"),\n    person(\"Nicholas\", \"Lewin-Koh\", role = c(\"ctb\", \"cph\")),\n    person(\"Mark\", \"Myatt\", role = c(\"ctb\", \"cph\")),\n    person(\"Michael\", \"Nelson\", role = \"ctb\"),\n    person(\"Ben\", \"Pfaff\", role = \"ctb\"),\n    person(\"Brian\", \"Quistorff\", role = \"ctb\"),\n    person(\"Frank\", \"Warmerdam\", role = c(\"ctb\", \"cph\")),\n    person(\"Stephen\", \"Weigand\", role = c(\"ctb\", \"cph\")),\n    person(\"Free Software Foundation, Inc.\", role = \"cph\"))",
+        "Contact": "see 'MailingList'",
+        "Copyright": "see file COPYRIGHTS",
+        "Description": "Reading and writing data stored by some versions of\n\t'Epi Info', 'Minitab', 'S', 'SAS', 'SPSS', 'Stata', 'Systat', 'Weka',\n\tand for reading and writing some 'dBase' files.",
+        "ByteCompile": "yes",
+        "Biarch": "yes",
+        "License": "GPL (>= 2)",
+        "BugReports": "https://bugs.r-project.org",
+        "MailingList": "R-help@r-project.org",
+        "URL": "https://svn.r-project.org/R-packages/trunk/foreign/",
+        "NeedsCompilation": "yes",
+        "Packaged": "2023-11-26 16:54:35 UTC; ripley",
+        "Author": "R Core Team [aut, cph, cre],\n  Roger Bivand [ctb, cph],\n  Vincent J. Carey [ctb, cph],\n  Saikat DebRoy [ctb, cph],\n  Stephen Eglen [ctb, cph],\n  Rajarshi Guha [ctb, cph],\n  Swetlana Herbrandt [ctb],\n  Nicholas Lewin-Koh [ctb, cph],\n  Mark Myatt [ctb, cph],\n  Michael Nelson [ctb],\n  Ben Pfaff [ctb],\n  Brian Quistorff [ctb],\n  Frank Warmerdam [ctb, cph],\n  Stephen Weigand [ctb, cph],\n  Free Software Foundation, Inc. [cph]",
+        "Maintainer": "R Core Team <R-core@R-project.org>",
+        "Repository": "CRAN",
+        "Date/Publication": "2023-11-28 06:42:13 UTC",
+        "Built": "R 4.4.1; x86_64-apple-darwin20; 2024-06-15 17:33:00 UTC; unix"
+      }
+    },
     "fs": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com",
@@ -1803,6 +1833,31 @@
         "Date/Publication": "2022-03-30 07:30:09 UTC",
         "Built": "R 4.4.0; x86_64-apple-darwin20; 2024-05-30 05:39:46 UTC; unix",
         "Archs": "magrittr.so.dSYM"
+      }
+    },
+    "maptools": {
+      "Source": "RSPM",
+      "Repository": null,
+      "description": {
+        "Package": "maptools",
+        "Version": "1.1-8",
+        "Date": "2023-07-18",
+        "Title": "Tools for Handling Spatial Objects",
+        "Authors@R": "c(\n\tperson(\"Roger\", \"Bivand\", role = c(\"cre\", \"aut\"), email = \"Roger.Bivand@nhh.no\", comment=c(ORCID=\"0000-0003-2392-6140\")),\n\tperson(\"Nicholas\", \"Lewin-Koh\", role = \"aut\"),\n\tperson(\"Edzer\", \"Pebesma\", role = \"ctb\"),\n\tperson(\"Eric\", \"Archer\", role = \"ctb\"),\n\tperson(\"Adrian\", \"Baddeley\", role = \"ctb\"),\n\tperson(\"Nick\", \"Bearman\", role = \"ctb\"),\n\tperson(\"Hans-Jörg\", \"Bibiko\", role = \"ctb\"),\n\tperson(\"Steven\", \"Brey\", role = \"ctb\"),\n\tperson(\"Jonathan\", \"Callahan\", role = \"ctb\"),\n\tperson(\"German\", \"Carrillo\", role = \"ctb\"),\n\tperson(\"Stéphane\", \"Dray\", role = \"ctb\"),\n\tperson(\"David\", \"Forrest\", role = \"ctb\"),\n\tperson(\"Michael\", \"Friendly\", role = \"ctb\"),\n\tperson(\"Patrick\", \"Giraudoux\", role = \"ctb\"),\n\tperson(\"Duncan\", \"Golicher\", role = \"ctb\"),\n\tperson(\"Virgilio\", \"Gómez Rubio\", role = \"ctb\"),\n\tperson(\"Patrick\", \"Hausmann\", role = \"ctb\"),\n\tperson(\"Karl Ove\", \"Hufthammer\", role = \"ctb\"),\n\tperson(\"Thomas\", \"Jagger\", role = \"ctb\"),\n\tperson(\"Kent\", \"Johnson\", role = \"ctb\"),\n        person(\"Matthew\", \"Lewis\", role = \"ctb\", comment=c(ORCID=\"0000-0003-2244-4078\")),\n\tperson(\"Sebastian\", \"Luque\", role = \"ctb\"),\n\tperson(\"Don\", \"MacQueen\", role = \"ctb\"),\n\tperson(\"Andrew\", \"Niccolai\", role = \"ctb\"),\n\tperson(\"Edzer\", \"Pebesma\", role = \"ctb\"),\n\tperson(\"Oscar\", \"Perpiñán Lamigueiro\", role = \"ctb\"),\n        person(\"Ethan\", \"Plunkett\", role = \"ctb\"),\n\tperson(\"Ege\", \"Rubak\", role = \"ctb\", comment=c(ORCID=\"0000-0002-6675-533X\")),\n\tperson(\"Tom\", \"Short\", role = \"ctb\"),\n\tperson(\"Greg\", \"Snow\", role = \"ctb\"),\n\tperson(\"Ben\", \"Stabler\", role = \"ctb\"),\n\tperson(\"Murray\", \"Stokely\", role = \"ctb\"),\n\tperson(\"Rolf\", \"Turner\", role = \"ctb\"))",
+        "Encoding": "UTF-8",
+        "Depends": "R (>= 2.10), sp (>= 1.0-11)",
+        "Imports": "foreign (>= 0.8), methods, grid, lattice, stats, utils,\ngrDevices",
+        "Suggests": "rgeos (>= 0.1-8), spatstat.geom (>= 1.65-0), PBSmapping,\nmaps, RColorBrewer, raster, polyclip, plotrix, spatstat.linnet\n(>= 1.65-3), spatstat.utils (>= 1.19.0), spatstat (>= 2.0-0)",
+        "Description": "Please note that 'maptools' will be retired during October 2023, plan transition at your earliest convenience (see <https://r-spatial.org/r/2023/05/15/evolution4.html> and earlier blogs for guidance); some functionality will be moved to 'sp'. Set of tools for manipulating geographic data. The package also provides interface wrappers for exchanging spatial objects with packages such as 'PBSmapping', 'spatstat.geom', 'maps', and others.",
+        "License": "GPL (>= 2)",
+        "URL": "http://maptools.r-forge.r-project.org/,\nhttps://r-forge.r-project.org/projects/maptools/",
+        "NeedsCompilation": "yes",
+        "Packaged": "2023-07-18 10:25:49 UTC; rsb",
+        "Author": "Roger Bivand [cre, aut] (<https://orcid.org/0000-0003-2392-6140>),\n  Nicholas Lewin-Koh [aut],\n  Edzer Pebesma [ctb],\n  Eric Archer [ctb],\n  Adrian Baddeley [ctb],\n  Nick Bearman [ctb],\n  Hans-Jörg Bibiko [ctb],\n  Steven Brey [ctb],\n  Jonathan Callahan [ctb],\n  German Carrillo [ctb],\n  Stéphane Dray [ctb],\n  David Forrest [ctb],\n  Michael Friendly [ctb],\n  Patrick Giraudoux [ctb],\n  Duncan Golicher [ctb],\n  Virgilio Gómez Rubio [ctb],\n  Patrick Hausmann [ctb],\n  Karl Ove Hufthammer [ctb],\n  Thomas Jagger [ctb],\n  Kent Johnson [ctb],\n  Matthew Lewis [ctb] (<https://orcid.org/0000-0003-2244-4078>),\n  Sebastian Luque [ctb],\n  Don MacQueen [ctb],\n  Andrew Niccolai [ctb],\n  Edzer Pebesma [ctb],\n  Oscar Perpiñán Lamigueiro [ctb],\n  Ethan Plunkett [ctb],\n  Ege Rubak [ctb] (<https://orcid.org/0000-0002-6675-533X>),\n  Tom Short [ctb],\n  Greg Snow [ctb],\n  Ben Stabler [ctb],\n  Murray Stokely [ctb],\n  Rolf Turner [ctb]",
+        "Maintainer": "Roger Bivand <Roger.Bivand@nhh.no>",
+        "Repository": "RSPM",
+        "Date/Publication": "2023-07-18 19:10:02 UTC",
+        "Built": "R 4.4.0; x86_64-pc-linux-gnu; 2024-05-13 20:01:14 UTC; unix"
       }
     },
     "memoise": {
@@ -3404,7 +3459,7 @@
   },
   "files": {
     "app.R": {
-      "checksum": "b8eade0495717d849ba4033d0b0b7875"
+      "checksum": "525e2fdb6578f9f3d98256810c8334d8"
     },
     "barrio_temp_page_1.pdf": {
       "checksum": "998d4bd303b537d6ed66a02742ddccb0"
@@ -3434,7 +3489,7 @@
       "checksum": "437c30e5f7c61ea404a9ecca90e6676f"
     },
     "barrio_temp.pdf": {
-      "checksum": "cfe8b25b469a3428e10ad6c5f83385e5"
+      "checksum": "4ea890e69c077c1c26edf9276bd22212"
     },
     "CONTRIBUTING.md": {
       "checksum": "96a2c17aab140b394c9fb44d0aa14801"
@@ -3443,7 +3498,7 @@
       "checksum": "79acc088538440d130d7b5549d8c1c52"
     },
     "functions/functions.R": {
-      "checksum": "6bab6cf41d88f94c28c6d8ed990e3a9f"
+      "checksum": "8054f56bf1468913e617906e0b691379"
     },
     "functions/printPDF.R": {
       "checksum": "4b725a55ee2f40a30949e2855c8baeb4"
@@ -3455,16 +3510,16 @@
       "checksum": "f5504d1b3e4b7019ab9752c993f6b198"
     },
     "instructions.pdf": {
-      "checksum": "53d343902fe36ecb2fc59589de08ec1c"
+      "checksum": "ff030be020d8145c718a40941bb73695"
     },
     "LICENSE": {
       "checksum": "2be6d824486b9b11e74856bd17eeb36e"
     },
     "overview.pdf": {
-      "checksum": "bdfdffd838f0a53741b8c0eeca59733d"
+      "checksum": "7471e5725923b2ba7a00a92cf4a85d8b"
     },
     "panel_1.pdf": {
-      "checksum": "a5f87b8d5f6a4dc47f284f2d3d33ac5d"
+      "checksum": "798750cf4889518fa86bf102a9a6180f"
     },
     "panel_10.pdf": {
       "checksum": "ac9093b340bb8bf924f81b7001bb8bb1"
@@ -3542,7 +3597,7 @@
       "checksum": "5a8b4cefbbecaabd75283bc92730d1e1"
     },
     "server.R": {
-      "checksum": "f82805d84aa1322759b7d814b03c28d8"
+      "checksum": "d4e17e21f889d1ab4710873d3ddcee12"
     },
     "ui.R": {
       "checksum": "abbd7fcfc9014ab91b7f94f8237072c3"
