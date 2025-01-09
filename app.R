@@ -13,7 +13,6 @@ library(waiter)
 library(ggspatial)
 library(sf)
 library(tmaptools)
-library(maptools)
 
 #Load components
 source('ui.R')
