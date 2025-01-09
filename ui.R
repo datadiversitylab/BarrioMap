@@ -5,105 +5,305 @@
 # Used to define the graphical aspects of the app.
 ###################
 
-ui <- navbarPage("Barrio Map",
-                 theme = bslib::bs_theme(version = 4, bootswatch = "minty"), #https://bootswatch.com/
-                 tabPanel("Welcome",
-                          waiter::useWaiter(),
-                          br(),
-                          h4("Welcome to Barrio Map!", align = "center"),
-                          br(),
-                          h6("If you are searching for a simple map for community projects, this is the place. Made with urban planners, architects, and designers in mind, BarrioMaps will let you print to typical scales used in planning / design (1”=50’, etc.), print large sheet sizes (24”x36”, etc.), export in easily edited formats (pdf and vectors). Barrio Map with the goal of bridging the gap between open access mapping and formal planning efforts. Whether you’re an architecture student or a community member with a grassroots project, BarrioMap was made for you!", align = "center"),
-                          br(),
-                          h5("Technical Details:"),
-                          h6("If you want to hear about the code, Barrio Map offers fundamental functionalities like finding locations by conducting searches or selecting coordinates. Users can select from predefined scales and export  the scaled maps to particular page sizes. Maps generated using Barrio Map are formal descriptions of particular sites with defined values of resolution, scales, and explicit information on distances. Barrio Map, in conjunction with OpenStreetMaps, is written in R, with functionalities largely leveraged from packages such as Leaflet and Shiny."),
-                          br(),
-                          h5("Why Barrio Map? why open source?"),
-                          h6("Traditional planning practices rely on licensed software to filter and interpret information from open source maps. The process of using open software for formal mapping is time-consuming and complex. Thus, only professionals have access to the necessary skills and software."),
-                          h6("Barrio Map is a comprehensive open source web-based mapping toolbox designed to bridge the gap between citizens and decision makers and add quantitative geo-referenced data to grassroots knowledge. The BarrioMap team believes that information is power, and should be accessible to all.")
-                 ),
-                 tabPanel("Create your map!",
-                          h5("Build and export your own maps in five easy steps:", align = "center"),
-                          tags$ul(
-                            tags$li("Select your location. Define specific coordinates (i.e. Longitude and Latitude) or use a search bar in map by unchecking ‘define coordinates’."), 
-                            tags$li("Pick a scale and DPI. Working on a building size site, then 1”=30’."), 
-                            tags$li("Choose a page size."), 
-                            tags$li("Click refresh"),
-                            tags$li("Print the map!")
-                          ),
-                          sidebarLayout(
-                            sidebarPanel(
-                              shinyjs::useShinyjs(),
-                              checkboxInput("usecoordinates", "Define coordinates?", TRUE),
-                              numericInput("latitude", "Latitude", value = 0),
-                              numericInput("longitude", "Longitude", value = 0), 
-                              selectInput("page", "Page size", 
-                                          choices = c("A4" = "a4", 
-                                                      "A3" = "a3",
-                                                      "Other" = "other")
-                                          ),
-                              selectInput("orientation", "Page orientation", 
-                                          choices = c("Vertical" = "v", 
-                                                      "Horizontal" = "h")
-                              ),
-                              numericInput("pageH", "Page height",
-                                           value = 0.267),
-                              numericInput("pageW", "Page width",
-                                           value = 0.18),
-                              numericInput("vpages", "Number of vertical pages", value = 1, min =1),
-                              numericInput("hpages", "Number of horizontal pages", value = 1, min =1),
-                              # Scale selection box
-                              selectInput("scale", "Define scale (1:x m)", 
-                                          choices = c("1:5,840" = 5840, 
-                                                      "1:600" = 600,
-                                                      "1:384" = 384
-                                          )
-                              ),
-                              #button
-                              downloadButton("print", "Download PDF")
-                            ),
-                            mainPanel(
-                              leaflet::leafletOutput("map", height = "100%", width = "100%")
-                            )
-                          )),
-                 tabPanel("About us",
-                          br(),
-                          h4("About us", align = "center"),
-                          br(),
-                          tags$ul(
-                            tags$li("Sarthak Haldar: Sarthak is currently a Graduate Student of Data Science at the School of Information at the University of Arizona. Sarthak is involved in tasks related to implementing Machine Learning, Deep Learning Algorithms and Libraries, NLP, Data Mining concepts for processing datasets, and also performing data analysis by creating pivot tables and creating visualizations."),
-                            tags$li("Mackenzie Waller: Mackenzie Waller is a landscape architect, urban designer and assistant professor at the College of Architecture, Planning and Landscape Architecture at the University of Arizona. Her work centers on environmental and spatial justice in the urban built environment. Her current research interests explore how the mediums of story, wildlife and play can serve as strategies to co-create desired futures. Her project experience began in environmental restoration and expanded to interdisciplinary approaches to neighborhood and urban public space design."),
-                            tags$li("Cristian Roman-Palacios: Cristian is currently an Assistant Professor of Practice at the School of Information at the University of Arizona. Cristian uses statistics, bioinformatics, and machine learning to answer questions, primarily at the interface between ecology and evolution. However, he has recently started exploring more applied research that combines machine learning, GIS, and the creation of tools with direct applications on society.")
-                          ),
-                          br(),
-                          h5("Acknowledgements"),
-                          h6("Hosting Barrio Map wouldn’t be possible without the support of sponsor: University of Arizona who donate their funding, hosting space or hardware to accomplish the target.", align = "center")
-                 ),
-                 navbarMenu("More",
-                            tabPanel("GitHub",
-                                     br(),
-                                     h4("GitHub", align = "center"),
-                                     br(),
-                                     h5("Barrio Map is an open-source web application for mapping and formal planning. Barrio Map is designed with simplicity, performance and usability in mind. It works efficiently across all major desktop and mobile platforms. The source code can be found at Github. You will need RStudio to run the application locally."), 
-                                     tags$ul(
-                                       tags$li("Create a New Project on RStudio and Select Version Control -> Git."),
-                                       tags$li("Paste the repository link to import the relevant files."),
-                                       tags$li("Run App")
-                                     ),
-                                     h5("You can also be a part of the project and help us by Creating Pull requests, providing feedback, reporting bugs, improving documentation and spreading the word about Barrio Map to your friends.")
-                            ),
-                            tabPanel("Additional resources",
-                                     br(),
-                                     h4("Additional resources", align = "center"),
-                                     br(),
-                                     h5("Please find other relevant applications available online:"),
-                                     tags$ul(
-                                       tags$li("RapiD (https://mapwith.ai/) : Uses artificial intelligence to predict features on high-resolution satellite imagery, these features are then populated in our RapiD map editing tool. It features AI based road layering. However users do need an official OSM account to use the tool. BarrioMap mitigates any hassle of creating an account."), 
-                                       tags$li("Inkatlas (https://inkatlas.com/) : Allows to create own maps for print, whether its for planning a bike trip or publishing a book. It is a paid proprietary application unlike BarrioMap which is Open Souce and Free."), 
-                                       tags$li("PrintMaps (https://www.printmaps.net/ ): The Printmaps editor lets you create high resolution maps in SVG, or PNG or PSD (Adobe Photoshop) format in 300 dpi. Printing the map needs a payment unlike BarrioMap which is Open Souce and Free."),
-                                       tags$li("Milvusmap (http://milvusmap.eu/ ) : Allows to create and print maps in pdf format. This application includes very little overlap with traditional planning practices unlike BarrioMap."),
-                                       tags$li("FieldPapers ( http://fieldpapers.org/compose#10/33.5345/-111.9603): Allows to create and print maps in pdf format. This application includes very little overlap with traditional planning practices unlike BarrioMap.")
-                                     )
-                            ))
+library(shiny)
+library(bslib)
+library(leaflet)
+library(shinyjs)
+
+ui <- navbarPage(
+  title = "Barrio Map",
+  theme = bslib::bs_theme(version = 4, bootswatch = "minty"),
+  
+  # HOME (WELCOME) TAB
+  tabPanel(
+    "Welcome",
+    fluidPage(
+      # Centered container
+      tags$div(
+        style = "max-width: 800px; margin: 0 auto; padding: 40px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333333; line-height: 1.6;",
+        
+        # Title and subtitle
+        tags$h1(
+          style = "font-size: 48px; font-weight: 300; margin-bottom: 10px; text-align: center;",
+          "Barrio Map"
+        ),
+        tags$h3(
+          style = "font-size: 24px; font-weight: 300; margin-bottom: 40px; text-align: center; color: #555555;",
+          "A Community-Focused Tool for Planning & Design"
+        ),
+        
+        # BOX 1
+        tags$div(
+          style = "background-color: #f9f9f9; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1);",
+          tags$h4("Welcome to Barrio Map!", align = "center"),
+          tags$p(
+            "If you are searching for a simple map for community projects, this is the place. Made with urban planners, architects, and designers in mind, Barrio Map helps you print maps to typical scales used in planning (1\"=50’, etc.), print large sheet sizes (24\"x36\", etc.), and export them in easily edited formats (PDF and vectors)."
+          ),
+          tags$p(
+            "Barrio Map bridges the gap between open-access mapping and formal planning efforts—whether you’re an architecture student or a community member leading a grassroots project. We aim to make professional-style maps more accessible while staying open-source."
+          )
+        ),
+        
+        # BOX 2
+        tags$div(
+          style = "background-color: #ffffff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1);",
+          tags$h4("Technical Details"),
+          tags$p(
+            "Barrio Map includes fundamental functionalities like location searches or coordinate-based navigation. Users can choose predefined scales, select page sizes, and export maps at specific resolutions. Created in R, Barrio Map leverages Leaflet, Shiny, and other packages to deliver a straightforward and reliable mapping experience."
+          ),
+          tags$h4("Why Barrio Map? Why Open Source?"),
+          tags$p(
+            "Traditional planning practices often rely on licensed software to filter and interpret open-source map data. Our goal is to simplify the process by offering a web-based, open-source platform that anyone can use—reducing the barriers to producing professional-quality maps."
+          )
+        ),
+        
+        # BOX 3
+        tags$div(
+          style = "background-color: #f9f9f9; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1);",
+          tags$h4("Ready to Explore?"),
+          tags$p(
+            "Navigate to the 'Create your map!' tab to start generating scalable, printable maps. Simply select a location, scale, and page size, then export or print as needed. We hope Barrio Map empowers communities, students, and professionals to share and develop spatial knowledge."
+          )
+        )
+      )
+    )
+  ),
+  
+  # CREATE YOUR MAP! TAB
+  tabPanel(
+    "Create your map!",
+    fluidPage(
+      tags$head(
+        tags$style(HTML("
+        /* A subtle box shadow for the map container */
+        #mapContainer {
+          box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+          position: relative;
+        }
+        
+        /* An absolute panel with a semi-transparent white background */
+        .mapControlPanel {
+          background-color: rgba(255, 255, 255, 0.9);
+          padding: 15px 20px;
+          border-radius: 8px;
+          box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+        }
+        
+        /* Steps list spacing */
+        .steps-list li {
+          margin-bottom: 10px;
+        }
+        
+        /* Big box (well) for instructions */
+        .instructions-box {
+          max-width: 800px;
+          margin: 0 auto 20px auto;
+          padding: 30px;
+          background-color: #f8f9fa;
+          border: 1px solid #ccc;
+          border-radius: 6px;
+        }
+        
+        /* Enhanced title styling */
+        .instructions-title {
+          font-size: 1.75em;
+          font-weight: bold;
+          text-align: center;
+          margin-bottom: 20px;
+        }
+      "))
+      ),
+      
+      # Introductory instructions in a "well"-like box
+      tags$div(
+        class = "instructions-box",
+        tags$div(
+          class = "instructions-title",
+          "Create Your Map"
+        ),
+        tags$p("Follow these five easy steps to build and export your own maps:"),
+        tags$ul(
+          class = "steps-list",
+          tags$li("Select your location. Define specific coordinates (Latitude & Longitude) or uncheck 'Define coordinates' to use the search bar."),
+          tags$li("Pick a scale and DPI (e.g. for a building-sized site, pick 1\"=30’ at 300 DPI)."),
+          tags$li("Choose a page size (A4, A3, or custom)."),
+          tags$li("Click 'Refresh' (or move the map as needed)."),
+          tags$li("Print the map!")
+        )
+      ),
+      
+      # Main map container
+      tags$div(
+        id = "mapContainer",
+        leafletOutput("map", height = "600px"),
+        
+        # Primary controls (location, scale, printing, etc.)
+        absolutePanel(
+          id = "mapControls",
+          class = "mapControlPanel",
+          top = 40, left = 40, width = 300,
+          draggable = TRUE,
+          
+          useShinyjs(),
+          
+          # Toggle for defining coordinates
+          checkboxInput("usecoordinates", "Define coordinates?", TRUE),
+          
+          # Frame fix
+          checkboxInput("fixframe", "Fix frame", value = FALSE),
+          
+          # Put lat/long side by side
+          fluidRow(
+            column(
+              width = 6,
+              numericInput("latitude", "Lat", value = 0, width = "100%")
+            ),
+            column(
+              width = 6,
+              numericInput("longitude", "Lon", value = 0, width = "100%")
+            )
+          ),
+          
+          # Basic page & orientation
+          selectInput(
+            "page", "Page size",
+            choices = c("A4" = "a4", "A3" = "a3", "Other" = "other")
+          ),
+          selectInput(
+            "orientation", "Page orientation",
+            choices = c("Vertical" = "v", "Horizontal" = "h")
+          ),
+          
+          numericInput("pageH", "Page height", value = 0.267),
+          numericInput("pageW", "Page width",  value = 0.18),
+          
+          # "More settings" for printing only
+          checkboxInput("showMoreSettings", "More settings", FALSE),
+          
+          # Scale input
+          selectInput(
+            "scale", "Define scale (1:x m)",
+            choices = c("1:5,840" = 5840, "1:600" = 600, "1:384" = 384)
+          ),
+          
+          # *New* toggle for adjusting OSM layers
+          checkboxInput("showLayerSettings", "Adjust layers to export?", FALSE),
+          
+          # Download PDF button
+          downloadButton("print", "Download PDF", class = "btn-primary")
+        ),
+        
+        # The advanced printing settings panel, shown only if showMoreSettings == TRUE
+        conditionalPanel(
+          condition = "input.showMoreSettings == true",
+          absolutePanel(
+            id = "mapControlsAdvanced",
+            class = "mapControlPanel",
+            top = 40, left = 360, width = 300,
+            draggable = TRUE,
+            
+            tags$h4("Advanced Settings", style = "margin-top: 0;"),
+            
+            # DPI input
+            numericInput("dpi", "DPI (dots per inch)", 300, min = 72, step = 1),
+            
+            # Additional pages
+            numericInput("vpages", "Number of vertical pages", value = 1, min = 1),
+            numericInput("hpages", "Number of horizontal pages", value = 1, min = 1)
+          )
+        ),
+        
+        # The layers settings panel, shown only if showLayerSettings == TRUE
+        conditionalPanel(
+          condition = "input.showLayerSettings == true",
+          absolutePanel(
+            id = "mapControlsLayers",
+            class = "mapControlPanel",
+            top = 40, left = 680, width = 320,
+            draggable = TRUE,
+            
+            # Main heading with minimal margin
+            tags$h4("Select OSM Layers to Export", style = "margin-top: 5px; margin-bottom: 10px;"),
+            
+            checkboxGroupInput(
+              "features", 
+              "Select features:",
+              choices = c("Roads" = "roads", "Buildings" = "buildings"),
+              selected = c("roads", "buildings")
+            )
+          )
+        )
+        
+      )
+    )
+  )
+  
+  ,
+  
+  # ABOUT US TAB
+  tabPanel(
+    "About us",
+    fluidPage(
+      tags$div(
+        style = "max-width: 800px; margin: 0 auto; padding: 40px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333333;",
+        tags$h4("About us", align = "center"),
+        tags$ul(
+          tags$li("Sarthak Haldar: Graduate Student in Data Science at the School of Information, University of Arizona—works with ML, NLP, Data Mining, and visualization."),
+          tags$li("Mackenzie Waller: Landscape architect, urban designer, and assistant professor at CAPLA, University of Arizona—researches environmental/spatial justice, community-led design strategies, and interdisciplinary approaches to public space."),
+          tags$li("Cristian Roman-Palacios: Assistant Professor of Practice at the School of Information, University of Arizona—uses statistics, bioinformatics, and ML for ecological and evolutionary questions, and applies those techniques to GIS and societal tools like Barrio Map.")
+        ),
+        tags$br(),
+        tags$h5("Acknowledgements", align = "center"),
+        tags$h6(
+          "Hosting Barrio Map is made possible by support from the University of Arizona. We appreciate their help with funding, hosting space, or hardware resources to advance our vision for accessible mapping."
+        )
+      )
+    )
+  ),
+  
+  # MORE -> GITHUB TAB
+  navbarMenu("More",
+             tabPanel(
+               "GitHub",
+               fluidPage(
+                 tags$div(
+                   style = "max-width: 800px; margin: 0 auto; padding: 40px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333333;",
+                   tags$h4("GitHub", align = "center"),
+                   tags$p(
+                     "Barrio Map is an open-source web application for mapping and formal planning. Designed for simplicity, performance, and usability, it runs on major desktop and mobile platforms. The source code is available on GitHub, and you’ll need RStudio to run it locally."
+                   ),
+                   tags$ul(
+                     tags$li("Create a new project in RStudio and select Version Control -> Git."),
+                     tags$li("Paste the repository link to import the relevant files."),
+                     tags$li("Run the application.")
+                   ),
+                   tags$p(
+                     "We welcome pull requests, bug reports, improvements to documentation, and general feedback. Spread the word about Barrio Map to your network so we can keep expanding and improving this resource."
+                   )
+                 )
+               )
+             ),
+             
+             # MORE -> ADDITIONAL RESOURCES TAB
+             tabPanel(
+               "Additional resources",
+               fluidPage(
+                 tags$div(
+                   style = "max-width: 800px; margin: 0 auto; padding: 40px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333333;",
+                   tags$h4("Additional resources", align = "center"),
+                   tags$p("Below are other relevant mapping applications available online, each with different focuses and features:"),
+                   tags$ul(
+                     tags$li("RapiD (https://mapwith.ai/): Uses AI for feature detection in satellite imagery; requires an official OSM account to use."),
+                     tags$li("Inkatlas (https://inkatlas.com/): Helps create print-ready maps but is a paid, proprietary service."),
+                     tags$li("PrintMaps (https://www.printmaps.net/): Allows exporting maps in multiple formats for a fee."),
+                     tags$li("Milvusmap (http://milvusmap.eu/): Exports PDFs of maps but offers limited overlap with formal planning practices."),
+                     tags$li("FieldPapers (http://fieldpapers.org/compose#10/33.5345/-111.9603): Creates printable PDF maps, though less aligned with traditional planning approaches.")
+                   )
+                 )
+               )
+             )
+  )
 )
+
 
 

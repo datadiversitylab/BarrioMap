@@ -10,6 +10,9 @@ library(ggplot2)
 library(ggmap)
 library(sp)
 library(waiter)
+library(ggspatial)
+library(sf)
+
 
 #Load components
 source('ui.R')

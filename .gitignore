@@ -5,3 +5,4 @@
 OSM.sf.shiny.Rproj
 *.Rproj
 .DS_Store
+*.pdf
