@@ -6,9 +6,19 @@
 ###################
 
 library(shiny)
-library(bslib)
 library(leaflet)
+library(leaflet.extras)
+library(bslib)
+library(dplyr)
 library(shinyjs)
+library(osmdata)
+library(ggplot2)
+library(ggmap)
+library(sp)
+library(waiter)
+library(ggspatial)
+library(sf)
+library(tmaptools)
 
 ui <- navbarPage(
   title = "Barrio Map",
