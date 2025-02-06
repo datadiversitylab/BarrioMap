@@ -11,7 +11,7 @@ ui <- navbarPage(
 
   # HOME TAB
   tabPanel(
-    add_busy_spinner(spin = "dots",
+    shinybusy::add_busy_spinner(spin = "dots",
                      timeout = 10,
                      height = "25px",
                      width = "25px"),
