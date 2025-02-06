@@ -116,7 +116,7 @@ ui <- navbarPage(
       # Main map container
       tags$div(
         id = "mapContainer",
-        leafletOutput("map", height = "600px"),
+        leaflet::leafletOutput("map", height = "600px"),
         
         # Primary controls (location, scale, printing, etc.)
         absolutePanel(
