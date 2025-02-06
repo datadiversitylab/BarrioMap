@@ -5,6 +5,7 @@
 # Updated to correctly compute the map zoom level based on the user-defined scale,
 # latitude, and a chosen (or default) DPI.
 ###################
+library(dplyr)
 
 source('functions/functions.R')
 
