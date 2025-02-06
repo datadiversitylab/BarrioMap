@@ -7,6 +7,7 @@
 ###################
 library(dplyr)
 library(leaflet)
+library(ggplot2)
 
 source('functions/functions.R')
 
