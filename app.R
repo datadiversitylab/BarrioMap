@@ -13,6 +13,7 @@ library(waiter)
 library(ggspatial)
 library(sf)
 library(tmaptools)
+library(shinybusy)
 
 #Load components
 source('ui.R')

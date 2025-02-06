@@ -5,27 +5,16 @@
 # Used to define the graphical aspects of the app.
 ###################
 
-library(shiny)
-library(leaflet)
-library(leaflet.extras)
-library(bslib)
-library(dplyr)
-library(shinyjs)
-library(osmdata)
-library(ggplot2)
-library(ggmap)
-library(sp)
-library(waiter)
-library(ggspatial)
-library(sf)
-library(tmaptools)
-
 ui <- navbarPage(
   title = "Barrio Map",
   theme = bslib::bs_theme(version = 4, bootswatch = "minty"),
-  
+
   # HOME TAB
   tabPanel(
+    add_busy_spinner(spin = "dots",
+                     timeout = 10,
+                     height = "25px",
+                     width = "25px"),
     "Welcome",
     fluidPage(
       # Centered container

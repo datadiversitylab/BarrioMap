@@ -6,21 +6,6 @@
 # latitude, and a chosen (or default) DPI.
 ###################
 
-library(shiny)
-library(leaflet)
-library(leaflet.extras)
-library(bslib)
-library(dplyr)
-library(shinyjs)
-library(osmdata)
-library(ggplot2)
-library(ggmap)
-library(sp)
-library(waiter)
-library(ggspatial)
-library(sf)
-library(tmaptools)
-
 source('functions/functions.R')
 
 server <- function(input, output, session) {
