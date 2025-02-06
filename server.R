@@ -10,11 +10,12 @@ source('functions/functions.R')
 
 server <- function(input, output, session) {
   
-  w <- Waiter$new(
-    id = "map",
-    html = spin_3(), 
-    color = transparent(.5)
-  )
+  #w <- Waiter$new(
+  #  id = "map",
+  #  html = spin_3(), 
+  #  color = transparent(.5)
+  #)
+  
   # Reactive values
   rv <- reactiveValues(
     latitude = 32.2540,
