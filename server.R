@@ -10,6 +10,7 @@ library(leaflet)
 library(ggplot2)
 library(osmdata)
 library(sf)
+library(ggspatial)
 
 source('functions/functions.R')
 
