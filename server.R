@@ -6,6 +6,7 @@
 # latitude, and a chosen (or default) DPI.
 ###################
 library(dplyr)
+library(leaflet)
 
 source('functions/functions.R')
 
