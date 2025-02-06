@@ -3171,33 +3171,6 @@
         "Built": "R 4.3.0; ; 2023-05-09 21:13:39 UTC; unix"
       }
     },
-    "waiter": {
-      "Source": "CRAN",
-      "Repository": "https://cran.rstudio.com",
-      "description": {
-        "Package": "waiter",
-        "Title": "Loading Screen for 'Shiny'",
-        "Version": "0.2.5",
-        "Date": "2022-01-02",
-        "Authors@R": "c(\n    person(given = \"John\",\n           family = \"Coene\",\n           role = c(\"aut\", \"cre\"),\n           email = \"jcoenep@gmail.com\"),\n    person(given = \"Jinhwan\",\n           family = \"Kim\",\n           role = \"ctb\",\n           email = 'hwanistic@gmail.com'),\n    person(given = \"Victor\",\n           family = \"Granda\",\n           role = c(\"ctb\"),\n           email = \"victorgrandagarcia@gmail.com\",\n           comment = c(ORCID = \"0000-0002-0469-1991\")))",
-        "Description": "Full screen and partial loading screens for 'Shiny' with spinners, progress bars, and notifications.",
-        "License": "MIT + file LICENSE",
-        "URL": "https://waiter.john-coene.com/,\nhttps://github.com/JohnCoene/waiter",
-        "BugReports": "https://github.com/JohnCoene/waiter/issues",
-        "Encoding": "UTF-8",
-        "Imports": "R6, shiny, htmltools",
-        "RoxygenNote": "7.1.2",
-        "Suggests": "httr, knitr, packer, rmarkdown",
-        "VignetteBuilder": "knitr",
-        "NeedsCompilation": "no",
-        "Packaged": "2022-01-03 13:33:14 UTC; john",
-        "Author": "John Coene [aut, cre],\n  Jinhwan Kim [ctb],\n  Victor Granda [ctb] (<https://orcid.org/0000-0002-0469-1991>)",
-        "Maintainer": "John Coene <jcoenep@gmail.com>",
-        "Repository": "CRAN",
-        "Date/Publication": "2022-01-03 14:30:02 UTC",
-        "Built": "R 4.3.0; ; 2024-12-16 20:52:20 UTC; unix"
-      }
-    },
     "withr": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com",
@@ -3364,7 +3337,7 @@
   },
   "files": {
     "app.R": {
-      "checksum": "9332b0aedf9ddf48ba7eda2215cee284"
+      "checksum": "ff61c3de951d98afd691f1feac559354"
     },
     "barrio_temp.pdf": {
       "checksum": "4ea890e69c077c1c26edf9276bd22212"
@@ -3403,10 +3376,10 @@
       "checksum": "5a8b4cefbbecaabd75283bc92730d1e1"
     },
     "server.R": {
-      "checksum": "d8868c7108efe298852521a9922c9dee"
+      "checksum": "cbd0eabb60de564bfa41621b4e2b4ef8"
     },
     "ui.R": {
-      "checksum": "e9be8f39ed631c2d430201776105f10e"
+      "checksum": "1fc020ad378ab2c8725edcbe50c6bf94"
     },
     "www/barrio.pdf": {
       "checksum": "e971932906f182044166e42078981b8c"
