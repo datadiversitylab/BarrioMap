@@ -125,7 +125,7 @@ ui <- navbarPage(
           top = 40, left = 40, width = 300,
           draggable = TRUE,
           
-          useShinyjs(),
+          shinyjs::useShinyjs(),
           
           # Toggle for defining coordinates or search
           checkboxInput("usecoordinates", "Define coordinates", TRUE),
