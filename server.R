@@ -8,6 +8,7 @@
 library(dplyr)
 library(leaflet)
 library(ggplot2)
+library(osmdata)
 
 source('functions/functions.R')
 
