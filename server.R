@@ -238,8 +238,7 @@ server <- function(input, output, session) {
   output$print <- downloadHandler(
     filename = function() { "barrio.pdf" },
     content  = function(file) {
-      w$show()
-      
+
       # Convert user's page size from meters -> inches
       width_in  <- rv$pageW * 39.3701
       height_in <- rv$pageH * 39.3701
@@ -485,7 +484,7 @@ server <- function(input, output, session) {
       qpdf::pdf_combine(input = tmp_files, output = "barrio_temp.pdf")
       file.copy("barrio_temp.pdf", file, overwrite = TRUE)
       
-      w$hide()
+      
     }
   )
 }
