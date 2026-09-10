@@ -72,7 +72,12 @@ ui <- navbarPage(
   tabPanel(
     "Create your map!",
     fluidPage(
-      tags$head(
+      tags$head(tags$script(defer = NA,
+      src = "https://umami.datadiversitylab.synology.me/script.js",
+      `data-website-id` = "543cffef-a100-47af-9dd9-2cf39517077b",
+      `data-domains` = "datadiversitylab.github.io",
+      `data-tag` = "barriomap"
+    ),
         tags$style(HTML("
         /* A subtle box shadow for the map container */
         #mapContainer {
