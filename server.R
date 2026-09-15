@@ -9,6 +9,7 @@ library(dplyr)
 library(leaflet)
 library(ggplot2)
 library(osmdata)
+library(osmextract)
 library(sf)
 library(ggspatial)
 
@@ -16,7 +17,7 @@ source('functions/functions.R')
 
 server <- function(input, output, session) {
   
-
+  
   # Reactive values
   rv <- reactiveValues(
     latitude = 32.2540,
@@ -28,7 +29,8 @@ server <- function(input, output, session) {
     scale = 5840,
     page = "a4",
     usecoordinates = TRUE,
-    dpi = 300
+    dpi = 300,
+    rects = NULL
   )
   # Update reactive values when UI elements are modified
   observeEvent(input$latitude,       { rv$latitude <- input$latitude })
@@ -93,7 +95,7 @@ server <- function(input, output, session) {
       # Take the first match (or any row you prefer)
       lon <- as.numeric(coords[[2]][1])
       lat <- as.numeric(coords[[2]][2])
-
+      
       # Center the leaflet map on that result:
       leafletProxy("map") %>%
         setView(lng = lon, lat = lat, zoom = 10)
@@ -181,7 +183,7 @@ server <- function(input, output, session) {
       setView(lng = rv$longitude, lat = rv$latitude, zoom = zl)
     
     # Use your custom returnRectangles function to compute bounding coords
-    rects <<- returnRectangles(
+    rv$rects <- returnRectangles(
       map = recMap,
       nRecLon = rv$hpages,
       nRecVert = rv$vpages
@@ -191,11 +193,11 @@ server <- function(input, output, session) {
     leafletProxy("map") %>%
       clearShapes() %>%
       {
-        for (i in 1:nrow(rects)) {
+        for (i in 1:nrow(rv$rects)) {
           addRectangles(
             .,
-            lng1 = rects[i, 1], lat1 = rects[i, 3],
-            lng2 = rects[i, 2], lat2 = rects[i, 4],
+            lng1 = rv$rects[i, 1], lat1 = rv$rects[i, 3],
+            lng2 = rv$rects[i, 2], lat2 = rv$rects[i, 4],
             fillColor = "transparent"
           )
         }
@@ -220,18 +222,18 @@ server <- function(input, output, session) {
       addTiles() %>%
       setView(lng = rv$longitude, lat = rv$latitude, zoom = zl)
     
-    rects <<- returnRectangles(
+    rv$rects <- returnRectangles(
       map = recMap,
       nRecLon = rv$hpages,
       nRecVert = rv$vpages
     )
     
     proxy <- leafletProxy("map") %>% clearShapes()
-    for (i in 1:nrow(rects)) {
+    for (i in 1:nrow(rv$rects)) {
       proxy %>%
         addRectangles(
-          lng1 = rects[i, 1], lat1 = rects[i, 3],
-          lng2 = rects[i, 2], lat2 = rects[i, 4],
+          lng1 = rv$rects[i, 1], lat1 = rv$rects[i, 3],
+          lng2 = rv$rects[i, 2], lat2 = rv$rects[i, 4],
           fillColor = "transparent"
         )
     }
@@ -242,7 +244,17 @@ server <- function(input, output, session) {
   output$print <- downloadHandler(
     filename = function() { "barrio.pdf" },
     content  = function(file) {
-
+      
+      # Guard against exporting before the map has produced any rectangles
+      req(rv$rects)
+      rects <- rv$rects
+      
+      # Write all intermediate files to a private temp directory, avoiding
+      # collisions between concurrent users and read-only app directories
+      export_dir <- tempfile("barrio_export_")
+      dir.create(export_dir)
+      on.exit(unlink(export_dir, recursive = TRUE), add = TRUE)
+      
       # Convert user's page size from meters -> inches
       width_in  <- rv$pageW * 39.3701
       height_in <- rv$pageH * 39.3701
@@ -288,7 +300,7 @@ server <- function(input, output, session) {
         )
       
       ggsave(
-        filename = "instructions.pdf",
+        filename = file.path(export_dir, "instructions.pdf"),
         plot     = instructionsPlot,
         device   = "pdf",
         width    = width_in,
@@ -307,27 +319,18 @@ server <- function(input, output, session) {
       max_lat <- max(all_lat)
       
       overview_bbox <- c(min_lng, min_lat, max_lng, max_lat)
-      osmQuery_overview <- opq(bbox = overview_bbox)
       
-      if ("roads" %in% input$features && !("buildings" %in% input$features)) {
-        osmQuery_overview <- osmQuery_overview %>% add_osm_feature(key = "highway")
-      }
-      if ("buildings" %in% input$features && !("roads" %in% input$features)) {
-        osmQuery_overview <- osmQuery_overview %>% add_osm_feature(key = "building")
-      }
-      if ("roads" %in% input$features && "buildings" %in% input$features) {
-        osmQuery_overview <- osmQuery_overview %>% add_osm_features(features = list(
-          "highway"  = c("motorway", "primary", "secondary", "tertiary", 
-                         "residential", "unclassified", "service", "living_street", "footway"),
-          "building" = c("yes", "house", "apartments", "commercial", "retail", 
-                         "industrial", "church", "garage", "school", "hotel", 
-                         "warehouse", "hospital", "stadium")
-        ))
-      }
-      
-      osm_ov <- osmQuery_overview %>% osmdata_sf()
-      roads_ov     <- osm_ov$osm_lines
-      buildings_ov <- osm_ov$osm_polygons
+      overview_features <- tryCatch(
+        getOsmFeatures(overview_bbox, input$features),
+        error = function(e) {
+          stop(safeError(paste0(
+            "Could not fetch map data for the overview page (", conditionMessage(e), "). ",
+            "Please try again."
+          )))
+        }
+      )
+      roads_ov     <- overview_features$roads
+      buildings_ov <- overview_features$buildings
       
       all_panels_sf <- lapply(seq_len(nrow(rects)), function(i) {
         bb <- rects[i, ]
@@ -363,8 +366,8 @@ server <- function(input, output, session) {
       )
       
       overviewPlot <- ggplot() +
-        geom_sf(data = roads_ov,     color = "darkgray", size = 0.5, alpha = 0.7) +
-        geom_sf(data = buildings_ov, fill  = "gray90",   color = "gray40", size = 0.3, alpha = 0.8) +
+        (if (!is.null(roads_ov))     geom_sf(data = roads_ov,     color = "darkgray", size = 0.5, alpha = 0.7)) +
+        (if (!is.null(buildings_ov)) geom_sf(data = buildings_ov, fill  = "gray90",   color = "gray40", size = 0.3, alpha = 0.8)) +
         geom_sf(data = overview_panels, fill = NA, color = "red", size = 1) +
         geom_sf_text(data = panelCenters_sf, aes(label = label), size = 4, color = "blue") +
         
@@ -390,7 +393,7 @@ server <- function(input, output, session) {
         )
       
       ggsave(
-        filename = "overview.pdf",
+        filename = file.path(export_dir, "overview.pdf"),
         plot     = overviewPlot,
         device   = "pdf",
         width    = width_in,
@@ -413,26 +416,17 @@ server <- function(input, output, session) {
         row_i <- floor((i - 1) / rv$hpages) + 1
         col_i <- ((i - 1) %% rv$hpages) + 1
         
-        panelQuery <- opq(bbox = bb)
-        if ("roads" %in% input$features && !("buildings" %in% input$features)) {
-          panelQuery <- panelQuery %>% add_osm_feature(key = "highway")
-        }
-        if ("buildings" %in% input$features && !("roads" %in% input$features)) {
-          panelQuery <- panelQuery %>% add_osm_feature(key = "building")
-        }
-        if ("roads" %in% input$features && "buildings" %in% input$features) {
-          panelQuery <- panelQuery %>% add_osm_features(features = list(
-            "highway"  = c("motorway", "primary", "secondary", "tertiary", 
-                           "residential", "unclassified", "service", "living_street", "footway"),
-            "building" = c("yes", "house", "apartments", "commercial", "retail", 
-                           "industrial", "church", "garage", "school", "hotel", 
-                           "warehouse", "hospital", "stadium")
-          ))
-        }
-        
-        osm_panel <- panelQuery %>% osmdata_sf()
-        roads_sf     <- osm_panel$osm_lines
-        buildings_sf <- osm_panel$osm_polygons
+        panel_features <- tryCatch(
+          getOsmFeatures(bb, input$features),
+          error = function(e) {
+            stop(safeError(paste0(
+              "Could not fetch map data for panel (", row_i, ", ", col_i, "): ",
+              conditionMessage(e), ". Please try again."
+            )))
+          }
+        )
+        roads_sf     <- panel_features$roads
+        buildings_sf <- panel_features$buildings
         
         panel_polygon <- st_as_sf(st_sfc(st_polygon(list(matrix(c(
           bb[1], bb[2],
@@ -443,8 +437,8 @@ server <- function(input, output, session) {
         ), ncol = 2, byrow = TRUE)))), crs = 4326)
         
         panelPlot <- ggplot() +
-          geom_sf(data = roads_sf,     color = "darkgray", size = 0.5, alpha = 0.7) +
-          geom_sf(data = buildings_sf, fill = "gray90",    color = "gray40", size = 0.3, alpha = 0.8) +
+          (if (!is.null(roads_sf))     geom_sf(data = roads_sf,     color = "darkgray", size = 0.5, alpha = 0.7)) +
+          (if (!is.null(buildings_sf)) geom_sf(data = buildings_sf, fill = "gray90",    color = "gray40", size = 0.3, alpha = 0.8)) +
           geom_sf(data = panel_polygon, fill = NA, color = "black", size = 1) +
           
           annotation_scale(location = "bl", width_hint = 0.2) +
@@ -468,7 +462,7 @@ server <- function(input, output, session) {
             panel.grid.minor  = element_blank()
           )
         
-        panel_pdf <- paste0("panel_", i, ".pdf")
+        panel_pdf <- file.path(export_dir, paste0("panel_", i, ".pdf"))
         ggsave(
           filename = panel_pdf,
           plot     = panelPlot,
@@ -484,12 +478,18 @@ server <- function(input, output, session) {
       #
       # MERGE: instructions.pdf (page1) + overview.pdf (page2) + panels (page3+)
       #
-      tmp_files <- c("instructions.pdf", "overview.pdf", panel_files)
-      qpdf::pdf_combine(input = tmp_files, output = "barrio_temp.pdf")
-      file.copy("barrio_temp.pdf", file, overwrite = TRUE)
+      tmp_files <- c(file.path(export_dir, "instructions.pdf"),
+                     file.path(export_dir, "overview.pdf"),
+                     panel_files)
+      merged_pdf <- file.path(export_dir, "barrio_temp.pdf")
+      qpdf::pdf_combine(input = tmp_files, output = merged_pdf)
       
+      # Fail loudly instead of handing back a truncated or empty PDF
+      if (!file.exists(merged_pdf) || file.info(merged_pdf)$size == 0) {
+        stop(safeError("The PDF export did not complete. Please try again."))
+      }
       
+      file.copy(merged_pdf, file, overwrite = TRUE)
     }
   )
 }
-

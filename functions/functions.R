@@ -174,6 +174,61 @@ osmdata_plot <- function(bbox_df,
 }
 
 
+# Session-scoped cache directory for osmextract downloads. Everything
+# under tempdir() is cleared automatically when the R process ends, so
+# a region is only ever re-downloaded in a fresh session.
+osmextract_cache_dir <- function() {
+  cache_dir <- file.path(tempdir(), "barrio_osmextract_cache")
+  if (!dir.exists(cache_dir)) dir.create(cache_dir, recursive = TRUE)
+  cache_dir
+}
+
+# Both overview_bbox and each panel's bb in server.R are already ordered
+# as (xmin, ymin, xmax, ymax), which is what sf::st_bbox expects.
+bbox_to_sf_order <- function(bb) {
+  c(xmin = bb[1], ymin = bb[2], xmax = bb[3], ymax = bb[4])
+}
+
+# Fetch roads and buildings for a bbox using osmextract instead of live
+# Overpass queries. The first request for a region downloads and caches
+# the matching Geofabrik extract for the rest of the session; every
+# later call, for any bbox inside that same region, reads from the
+# cached file and clips to the requested bbox.
+getOsmFeatures <- function(bb, features) {
+  bbox_sf <- sf::st_as_sfc(sf::st_bbox(bbox_to_sf_order(bb), crs = 4326))
+  cache_dir <- osmextract_cache_dir()
+  
+  roads <- NULL
+  buildings <- NULL
+  
+  if ("roads" %in% features) {
+    roads <- osmextract::oe_get(
+      place               = bbox_sf,
+      layer               = "lines",
+      download_directory  = cache_dir,
+      boundary            = bbox_sf,
+      boundary_type       = "clipsrc",
+      quiet               = TRUE
+    )
+    roads <- roads[!is.na(roads$highway), ]
+  }
+  
+  if ("buildings" %in% features) {
+    buildings <- osmextract::oe_get(
+      place               = bbox_sf,
+      layer               = "multipolygons",
+      download_directory  = cache_dir,
+      boundary            = bbox_sf,
+      boundary_type       = "clipsrc",
+      quiet               = TRUE
+    )
+    buildings <- buildings[!is.na(buildings$building), ]
+  }
+  
+  list(roads = roads, buildings = buildings)
+}
+
+
 
 #Calculate the number of screen pixels that correspond to a given distance in meters
 meter2screenpixel <- function(meter, orient ="v",  zoomlevel, latitude) {
