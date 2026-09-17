@@ -130,7 +130,7 @@ LAYER_DEFS <- list(
     source  = "multipolygons",
     filter  = function(x) {
       ((!is.na(x$leisure) & x$leisure %in% c("park","garden","nature_reserve","playground")) |
-       (!is.na(x$landuse) & x$landuse %in% c("grass","forest","meadow","recreation_ground","allotments")))
+         (!is.na(x$landuse) & x$landuse %in% c("grass","forest","meadow","recreation_ground","allotments")))
     },
     type    = "polygon",
     fill    = "#c8e6c0",
@@ -144,7 +144,7 @@ LAYER_DEFS <- list(
     source  = "multipolygons",
     filter  = function(x) {
       ((!is.na(x$natural) & x$natural == "water") | !is.na(x$water) |
-       (!is.na(x$landuse) & x$landuse == "reservoir"))
+         (!is.na(x$landuse) & x$landuse == "reservoir"))
     },
     type    = "polygon",
     fill    = "#b3d9f7",
@@ -189,7 +189,7 @@ LAYER_DEFS <- list(
     source  = "points",
     filter  = function(x) {
       (!is.na(x$highway) & x$highway == "bus_stop") | !is.na(x$public_transport) |
-      (!is.na(x$railway) & x$railway %in% c("station","stop","halt"))
+        (!is.na(x$railway) & x$railway %in% c("station","stop","halt"))
     },
     type    = "point",
     color   = "#FF9800",
@@ -282,7 +282,11 @@ generateMapCode <- function() {
 }
 
 codesDir <- function() {
-  d <- file.path(getwd(), "map_codes")
+  # getwd() points to the deployment bundle and resets on every push.
+  # path.expand("~") is the service account's home directory on the
+  # server and persists across redeployments, so the counter, map
+  # codes, and gallery are never wiped when the app is updated.
+  d <- file.path(path.expand("~"), ".barriomap_data")
   if (!dir.exists(d)) dir.create(d, recursive = TRUE)
   d
 }
