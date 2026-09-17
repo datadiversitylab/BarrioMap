@@ -1,9 +1,7 @@
 ###################
 # server.R
-# 
-# Server controller. 
-# Updated to correctly compute the map zoom level based on the user-defined scale,
-# latitude, and a chosen (or default) DPI.
+#
+# Server controller.
 ###################
 library(dplyr)
 library(leaflet)
@@ -12,67 +10,69 @@ library(osmdata)
 library(osmextract)
 library(sf)
 library(ggspatial)
+library(jsonlite)
 
 source('functions/functions.R')
 
 server <- function(input, output, session) {
-  
-  
+
   # Reactive values
   rv <- reactiveValues(
-    latitude = 32.2540,
-    longitude = -110.9742,
-    pageH = 0.267,
-    pageW = 0.18,
-    vpages = 1,
-    hpages = 1,
-    scale = 5840,
-    page = "a4",
+    latitude     = 32.2540,
+    longitude    = -110.9742,
+    pageH        = 0.267,
+    pageW        = 0.18,
+    vpages       = 1,
+    hpages       = 1,
+    scale        = 5840,
+    page         = "a4",
     usecoordinates = TRUE,
-    dpi = 300,
-    rects = NULL
+    dpi          = 300,
+    rects        = NULL,
+    roads_color  = "#555555",
+    bld_fill     = "#f2f2f2",
+    bld_border   = "#aaaaaa",
+    show_north   = TRUE,
+    show_scale   = TRUE,
+    show_coords  = TRUE,
+    show_legend  = TRUE
   )
-  # Update reactive values when UI elements are modified
-  observeEvent(input$latitude,       { rv$latitude <- input$latitude })
-  observeEvent(input$longitude,      { rv$longitude <- input$longitude })
-  observeEvent(input$pageH,          { rv$pageH <- input$pageH })
-  observeEvent(input$pageW,          { rv$pageW <- input$pageW })
-  observeEvent(input$vpages,         { rv$vpages <- input$vpages })
-  observeEvent(input$hpages,         { rv$hpages <- input$hpages })
-  observeEvent(input$page,           { rv$page <- input$page })
-  observeEvent(input$orientation,    { rv$orientation <- input$orientation })
-  observeEvent(input$scale,          { rv$scale <- input$scale })
+
+  # Update reactive values when UI elements change
+  observeEvent(input$latitude,       { rv$latitude       <- input$latitude       })
+  observeEvent(input$longitude,      { rv$longitude      <- input$longitude      })
+  observeEvent(input$pageH,          { rv$pageH          <- input$pageH          })
+  observeEvent(input$pageW,          { rv$pageW          <- input$pageW          })
+  observeEvent(input$vpages,         { rv$vpages         <- input$vpages         })
+  observeEvent(input$hpages,         { rv$hpages         <- input$hpages         })
+  observeEvent(input$page,           { rv$page           <- input$page           })
+  observeEvent(input$orientation,    { rv$orientation    <- input$orientation    })
+  observeEvent(input$scale,          { rv$scale          <- input$scale          })
   observeEvent(input$usecoordinates, { rv$usecoordinates <- input$usecoordinates })
-  observeEvent(input$dpi,            { rv$dpi <- input$dpi })
-  
+  observeEvent(input$dpi,            { rv$dpi            <- input$dpi            })
+  observeEvent(input$roads_color,    { rv$roads_color    <- input$roads_color    })
+  observeEvent(input$bld_fill,       { rv$bld_fill       <- input$bld_fill       })
+  observeEvent(input$bld_border,     { rv$bld_border     <- input$bld_border     })
+  observeEvent(input$show_north,     { rv$show_north     <- input$show_north     })
+  observeEvent(input$show_scale,     { rv$show_scale     <- input$show_scale     })
+  observeEvent(input$show_coords,    { rv$show_coords    <- input$show_coords    })
+  observeEvent(input$show_legend,    { rv$show_legend    <- input$show_legend    })
+
   # Render the initial map
   output$map <- leaflet::renderLeaflet({
-    if(input$usecoordinates){
-      leaflet(options = leafletOptions(
-        zoomControl = FALSE,
-        crs = leafletCRS(scales = 1),
-        attributionControl = FALSE
-      )) %>%
-        htmlwidgets::onRender("function(el, x) {
+    leaflet(options = leafletOptions(
+      zoomControl = FALSE,
+      crs = leafletCRS(scales = 1),
+      attributionControl = FALSE
+    )) %>%
+      htmlwidgets::onRender("function(el, x) {
         L.control.zoom({ position: 'bottomright' }).addTo(this)}") %>%
-        addTiles() %>%
-        addScaleBar(position = 'bottomleft') %>%
-        setView(lng = -110.9742, lat = 32.2540, zoom = 10)
-    } else {
-      leaflet(options = leafletOptions(
-        zoomControl = FALSE,
-        crs = leafletCRS(scales = 1),
-        attributionControl = FALSE
-      )) %>%
-        htmlwidgets::onRender("function(el, x) {
-        L.control.zoom({ position: 'bottomright' }).addTo(this)}") %>%
-        addTiles() %>%
-        addScaleBar(position = 'bottomleft') %>%
-        setView(lng = -110.9742, lat = 32.2540, zoom = 10)
-    }
-  }) 
-  
-  # Hide/Show latitude & longitude inputs based on "usecoordinates"
+      addTiles() %>%
+      addScaleBar(position = 'bottomleft') %>%
+      setView(lng = -110.9742, lat = 32.2540, zoom = 10)
+  })
+
+  # Hide/show coordinate inputs
   observeEvent(input$usecoordinates, {
     if (input$usecoordinates == FALSE) {
       shinyjs::hide("longitude")
@@ -82,29 +82,22 @@ server <- function(input, output, session) {
       shinyjs::show("latitude")
     }
   })
-  
+
+  # Geocode search box
   observeEvent(input$searchbox, {
-    req(!input$usecoordinates)   # only if user is using the search approach
-    req(nzchar(input$searchbox)) # searchbox not empty
-    
-    # geocode_OSM returns lat, lon
+    req(!input$usecoordinates)
+    req(nzchar(input$searchbox))
     coords <- tmaptools::geocode_OSM(q = input$searchbox)
-    
-    # If we got at least one geocoded result:
     if (length(coords) > 0) {
-      # Take the first match (or any row you prefer)
       lon <- as.numeric(coords[[2]][1])
       lat <- as.numeric(coords[[2]][2])
-      
-      # Center the leaflet map on that result:
-      leafletProxy("map") %>%
-        setView(lng = lon, lat = lat, zoom = 10)
+      leafletProxy("map") %>% setView(lng = lon, lat = lat, zoom = 10)
     } else {
-      showNotification("Could not find location. Try a different search term.")
+      showNotification("Could not find that location. Try a different search term.")
     }
   })
-  
-  # Hide/Show page size inputs based on user selection
+
+  # Hide/show page size inputs
   observeEvent(rv$page, {
     if (rv$page != "other") {
       shinyjs::hide("pageH")
@@ -116,396 +109,523 @@ server <- function(input, output, session) {
       shinyjs::hide("orientation")
     }
   })
-  
-  # Dynamically set default page size for A4 / A3
+
+  # Set default page dimensions for A4 / A3
   observeEvent(list(input$page, input$orientation), {
     if (input$page == "a4") {
-      if (input$orientation == "v") {
-        rv$pageH <- 0.267 
-        rv$pageW <- 0.18
-      } else {
-        rv$pageW <- 0.267 
-        rv$pageH <- 0.18
-      }
-      
+      if (input$orientation == "v") { rv$pageH <- 0.267; rv$pageW <- 0.18
+      } else                        { rv$pageH <- 0.18;  rv$pageW <- 0.267 }
     } else if (input$page == "a3") {
-      if (input$orientation == "v") {
-        rv$pageH <- 0.420
-        rv$pageW <- 0.297
-      } else {
-        rv$pageW <- 0.420
-        rv$pageH <- 0.297
-      }
+      if (input$orientation == "v") { rv$pageH <- 0.420; rv$pageW <- 0.297
+      } else                        { rv$pageH <- 0.297; rv$pageW <- 0.420 }
     } else {
       rv$pageH <- input$pageH
       rv$pageW <- input$pageW
     }
   })
-  
-  # Update latitude/longitude inputs when the user drags/zooms the map
+
+  # Sync map center to coordinate inputs when the user pans
   observeEvent(input$map_center, {
-    # This reactive event triggers when the user drags/zooms the map
-    # But we only update the numeric inputs if fixframe is NOT checked
     req(!input$fixframe)
-    
-    updateNumericInput(
-      session = session,
-      inputId = "longitude",
-      value = input$map_center$lng
-    )
-    updateNumericInput(
-      session = session,
-      inputId = "latitude",
-      value = input$map_center$lat
-    )
+    updateNumericInput(session, "longitude", value = input$map_center$lng)
+    updateNumericInput(session, "latitude",  value = input$map_center$lat)
   })
-  
-  # First observer: draws rectangle(s) on the map
+
+  # First observer: compute and draw rectangles
   observe({
-    # Calculate the Leaflet zoom level from user scale, latitude, and DPI
     zl <- calcZoom(
       scale_meters_per_inch = as.numeric(rv$scale),
       lat = rv$latitude,
-      dpi = as.numeric(rv$dpi)  # or let your user input this
+      dpi = as.numeric(rv$dpi)
     )
-    
-    # Convert the user page size (m) into pixel dimensions for the bounding rectangle
     mbox_scale <- as.numeric(rv$scale)
     pixel_v <- meter2screenpixel(rv$pageH * mbox_scale, orient = "v", zl, rv$latitude)
     pixel_h <- meter2screenpixel(rv$pageW * mbox_scale, orient = "h", zl, rv$latitude)
-    
-    # Debug
-    cat("pixel ratio v/h:", pixel_v / pixel_h, "\n")
-    
-    # Build a small "offscreen" leaflet map to compute bounding boxes
+
     recMap <- leaflet(width = pixel_h, height = pixel_v) %>%
       addTiles() %>%
       setView(lng = rv$longitude, lat = rv$latitude, zoom = zl)
-    
-    # Use your custom returnRectangles function to compute bounding coords
-    rv$rects <- returnRectangles(
-      map = recMap,
-      nRecLon = rv$hpages,
-      nRecVert = rv$vpages
-    )
-    
-    # Add these rectangle(s) to the main "map"
+
+    rv$rects <- returnRectangles(map = recMap, nRecLon = rv$hpages, nRecVert = rv$vpages)
+
     leafletProxy("map") %>%
       clearShapes() %>%
       {
         for (i in 1:nrow(rv$rects)) {
-          addRectangles(
-            .,
-            lng1 = rv$rects[i, 1], lat1 = rv$rects[i, 3],
-            lng2 = rv$rects[i, 2], lat2 = rv$rects[i, 4],
-            fillColor = "transparent"
-          )
+          addRectangles(., lng1 = rv$rects[i, 1], lat1 = rv$rects[i, 3],
+                        lng2 = rv$rects[i, 2], lat2 = rv$rects[i, 4],
+                        fillColor = "transparent")
         }
       }
   })
-  
-  # Second observer: update rectangles if the map view changes
+
+  # Second observer: update rectangles if map view changes
   observe({
     zl <- calcZoom(
       scale_meters_per_inch = as.numeric(rv$scale),
       lat = rv$latitude,
       dpi = 300
     )
-    
     mbox_scale <- as.numeric(rv$scale)
     pixel_v <- meter2screenpixel(rv$pageH * mbox_scale, orient = "v", zl, rv$latitude)
     pixel_h <- meter2screenpixel(rv$pageW * mbox_scale, orient = "h", zl, rv$latitude)
-    
-    cat("pixel ratio v/h:", pixel_v / pixel_h, "\n")
-    
+
     recMap <- leaflet(width = pixel_h, height = pixel_v) %>%
       addTiles() %>%
       setView(lng = rv$longitude, lat = rv$latitude, zoom = zl)
-    
-    rv$rects <- returnRectangles(
-      map = recMap,
-      nRecLon = rv$hpages,
-      nRecVert = rv$vpages
-    )
-    
+
+    rv$rects <- returnRectangles(map = recMap, nRecLon = rv$hpages, nRecVert = rv$vpages)
+
     proxy <- leafletProxy("map") %>% clearShapes()
     for (i in 1:nrow(rv$rects)) {
-      proxy %>%
-        addRectangles(
-          lng1 = rv$rects[i, 1], lat1 = rv$rects[i, 3],
-          lng2 = rv$rects[i, 2], lat2 = rv$rects[i, 4],
-          fillColor = "transparent"
-        )
+      proxy %>% addRectangles(
+        lng1 = rv$rects[i, 1], lat1 = rv$rects[i, 3],
+        lng2 = rv$rects[i, 2], lat2 = rv$rects[i, 4],
+        fillColor = "transparent"
+      )
     }
   })
-  
-  # Download Handler - Exporting PDF with user-defined page size (in meters)
-  
+
+  # Restore map settings from a code
+  observeEvent(input$restore_map_btn, {
+    req(nzchar(trimws(input$map_code_input)))
+    params <- loadMapCode(input$map_code_input)
+    if (is.null(params)) {
+      showNotification(
+        "Code not found or expired. Codes are valid for 30 days.",
+        type = "error", duration = 5
+      )
+      return()
+    }
+    rv$latitude  <- params$latitude
+    rv$longitude <- params$longitude
+    rv$scale     <- params$scale
+    rv$pageH     <- params$pageH
+    rv$pageW     <- params$pageW
+    rv$vpages    <- params$vpages
+    rv$hpages    <- params$hpages
+    rv$dpi       <- params$dpi
+
+    updateNumericInput(session, "latitude",  value = params$latitude)
+    updateNumericInput(session, "longitude", value = params$longitude)
+    updateSelectInput(session,  "scale",     selected = as.character(params$scale))
+    updateNumericInput(session, "vpages",    value = params$vpages)
+    updateNumericInput(session, "hpages",    value = params$hpages)
+    updateNumericInput(session, "dpi",       value = params$dpi)
+    if (!is.null(params$features))
+      updateCheckboxGroupInput(session, "features", selected = params$features)
+    if (!is.null(params$roads_color))
+      updateSelectInput(session, "roads_color", selected = params$roads_color)
+    if (!is.null(params$bld_fill))
+      updateSelectInput(session, "bld_fill",    selected = params$bld_fill)
+    if (!is.null(params$bld_border))
+      updateSelectInput(session, "bld_border",  selected = params$bld_border)
+    if (!is.null(params$show_north))
+      updateCheckboxInput(session, "show_north",  value = params$show_north)
+    if (!is.null(params$show_scale))
+      updateCheckboxInput(session, "show_scale",  value = params$show_scale)
+    if (!is.null(params$show_coords))
+      updateCheckboxInput(session, "show_coords", value = params$show_coords)
+    if (!is.null(params$show_legend))
+      updateCheckboxInput(session, "show_legend", value = params$show_legend)
+
+    leafletProxy("map") %>%
+      setView(lng = params$longitude, lat = params$latitude, zoom = 10)
+    showNotification("Map restored!", type = "message", duration = 3)
+  })
+
+  # Download Handler
   output$print <- downloadHandler(
     filename = function() { "barrio.pdf" },
     content  = function(file) {
-      
-      # Guard against exporting before the map has produced any rectangles
+
       req(rv$rects)
       rects <- rv$rects
 
-      # One step each for: instructions, overview data, overview page, merge,
-      # plus two per panel (data + drawing).
-      total_steps <- 4 + 2 * nrow(rects)
+      # A single panel (1x1) skips the overview page.
+      is_single <- (rv$hpages == 1 && rv$vpages == 1)
+
+      # Progress: cover + overview data + overview draw (skip if single) +
+      # 2 per panel + legend (if shown) + merge
+      n_panels    <- nrow(rects)
+      total_steps <- 2 + (if (!is_single) 2 else 0) + 2 * n_panels +
+                     (if (isTRUE(input$show_legend)) 1 else 0) + 1
       progress <- shiny::Progress$new(max = total_steps)
       progress$set(message = "Generating your map", value = 0)
-      on.exit(progress$close(), add = TRUE)
-      
-      # Write all intermediate files to a private temp directory, avoiding
-      # collisions between concurrent users and read-only app directories
+      on.exit(progress$close(),                          add = TRUE)
+
       export_dir <- tempfile("barrio_export_")
       dir.create(export_dir)
-      on.exit(unlink(export_dir, recursive = TRUE), add = TRUE)
-      
-      # Convert user's page size from meters -> inches
+      on.exit(unlink(export_dir, recursive = TRUE),      add = TRUE)
+
       width_in  <- rv$pageW * 39.3701
       height_in <- rv$pageH * 39.3701
-      
-      #
-      # CREATE INSTRUCTIONS PAGE (PAGE 1)
-      #
-      progress$inc(amount = 1, detail = "Building the instructions page")
-      instr_lines <- c("Barrio PDF Instructions:")
-      # row-major logic: row = floor((i-1)/rv$hpages) + 1
-      #                  col = ((i-1) %% rv$hpages) + 1
-      for (i in seq_len(nrow(rects))) {
-        row_i <- floor((i - 1) / rv$hpages) + 1
-        col_i <- ((i - 1) %% rv$hpages) + 1
-        
-        bb <- rects[i, ]
-        instr_lines <- c(
-          instr_lines,
-          paste0(
-            "Page ", i + 2,  # because Page 1= instructions, Page 2= overview
-            " => Panel (", row_i, ", ", col_i, ")",
-            " with bounding box (", 
-            paste(round(bb, 5), collapse = ", "), 
-            ")"
-          )
-        )
+
+      # Compute full extent coordinates (used on cover and overview)
+      all_lng  <- c(rects[, 1], rects[, 2])
+      all_lat  <- c(rects[, 3], rects[, 4])
+      min_lng  <- min(all_lng);  max_lng <- max(all_lng)
+      min_lat  <- min(all_lat);  max_lat <- max(all_lat)
+      ctr_lat  <- (min_lat + max_lat) / 2
+      ctr_lng  <- (min_lng + max_lng) / 2
+      lat_lbl  <- sprintf("%.4f\u00b0 %s", abs(ctr_lat), ifelse(ctr_lat >= 0, "N", "S"))
+      lng_lbl  <- sprintf("%.4f\u00b0 %s", abs(ctr_lng), ifelse(ctr_lng >= 0, "E", "W"))
+
+      # Generate the map code now so it appears on the cover
+      map_code <- generateMapCode()
+
+      footer <- paste0(
+        "barriomap.arizona.edu  \u00b7  Data: OpenStreetMap (ODbL)  \u00b7  ",
+        format(Sys.Date(), "%B %d, %Y"),
+        "  \u00b7  Code: ", map_code
+      )
+
+      # Helper: build a styled map ggplot
+      buildMapPlot <- function(roads_sf, blds_sf, xlim, ylim, title,
+                               panel_outline_sf = NULL,
+                               show_panel_numbers = FALSE,
+                               panel_centers_sf  = NULL) {
+        axis_theme <- if (isTRUE(input$show_coords)) {
+          theme(axis.text  = element_text(size = 6, color = "#555555"),
+                axis.ticks = element_line(color = "#aaaaaa", linewidth = 0.3))
+        } else {
+          theme(axis.text  = element_blank(),
+                axis.ticks = element_blank())
+        }
+
+        p <- ggplot() +
+          (if (!is.null(roads_sf))
+             geom_sf(data = roads_sf, color = rv$roads_color, linewidth = 0.35, alpha = 0.85)) +
+          (if (!is.null(blds_sf))
+             geom_sf(data = blds_sf, fill = rv$bld_fill, color = rv$bld_border,
+                     linewidth = 0.15, alpha = 0.9)) +
+          (if (!is.null(panel_outline_sf))
+             geom_sf(data = panel_outline_sf, fill = NA, color = "#cc2200", linewidth = 0.7)) +
+          (if (show_panel_numbers && !is.null(panel_centers_sf))
+             geom_sf_text(data = panel_centers_sf, aes(label = label),
+                          size = 3, color = "#cc2200", fontface = "bold")) +
+          (if (isTRUE(input$show_scale))
+             annotation_scale(location = "bl", width_hint = 0.25,
+                              bar_cols = c("#333333", "#ffffff"),
+                              text_cex = 0.65, line_col = "#333333")) +
+          (if (isTRUE(input$show_north))
+             annotation_north_arrow(
+               location = "tr", which_north = "true",
+               style    = north_arrow_nautical(
+                 fill     = c("#333333", "#ffffff"),
+                 line_col = "#333333",
+                 text_col = "#333333"
+               ),
+               height = unit(1.1, "cm"), width = unit(1.1, "cm")
+             )) +
+          coord_sf(xlim = xlim, ylim = ylim, expand = FALSE) +
+          labs(title = title, caption = footer) +
+          theme_minimal(base_size = 9) +
+          theme(
+            legend.position  = "none",
+            panel.grid.major = element_line(color = "#eeeeee", linewidth = 0.2),
+            panel.grid.minor = element_blank(),
+            panel.border     = element_rect(fill = NA, color = "#444444", linewidth = 0.4),
+            axis.title       = element_blank(),
+            plot.title       = element_text(face = "bold", size = 10, hjust = 0.5,
+                                            margin = margin(6, 0, 3, 0)),
+            plot.caption     = element_text(size = 5.5, color = "#999999", hjust = 0.5,
+                                            margin = margin(4, 0, 0, 0)),
+            plot.margin      = margin(5, 5, 5, 5),
+            plot.background  = element_rect(fill = "white", color = NA)
+          ) +
+          axis_theme
+        p
       }
-      
-      instructions_df <- data.frame(
-        x = 0,
-        y = seq(0, - (length(instr_lines) - 1)),
-        label = instr_lines
-      )
-      
-      instructionsPlot <- ggplot(instructions_df, aes(x, y, label = label)) +
-        geom_text(hjust = 0, vjust = 1, size = 5, family = "sans") +
-        xlim(0, 100) +
-        ylim(-length(instr_lines), 1) +
-        theme_void(base_size = 14) +
-        ggtitle("Barrio PDF Instructions") +
-        theme(
-          plot.title = element_text(face = "bold", hjust = 0.5, size = 16),
-          plot.margin = margin(30, 30, 30, 30)
-        )
-      
-      ggsave(
-        filename = file.path(export_dir, "instructions.pdf"),
-        plot     = instructionsPlot,
-        device   = "pdf",
-        width    = width_in,
-        height   = height_in,
-        units    = "in"
-      )
-      
-      #
-      # CREATE OVERVIEW PAGE (PAGE 2)
-      #
-      progress$inc(amount = 1, detail = "Fetching map data for this area (this takes longer the first time you visit a new region)")
-      all_lng <- c(rects[,1], rects[,2])
-      all_lat <- c(rects[,3], rects[,4])
-      min_lng <- min(all_lng)
-      max_lng <- max(all_lng)
-      min_lat <- min(all_lat)
-      max_lat <- max(all_lat)
-      
-      overview_bbox <- c(min_lng, min_lat, max_lng, max_lat)
-      
-      overview_features <- tryCatch(
-        getOsmFeatures(overview_bbox, input$features),
+
+      # PAGE 1: COVER
+      progress$inc(amount = 1, detail = "Building the cover page")
+
+      panel_lines <- if (is_single) {
+        sprintf("Bounding box: %.4f, %.4f, %.4f, %.4f", min_lng, min_lat, max_lng, max_lat)
+      } else {
+        lines <- sapply(seq_len(n_panels), function(i) {
+          row_i <- floor((i - 1) / rv$hpages) + 1
+          col_i <- ((i - 1) %% rv$hpages) + 1
+          bb    <- rects[i, ]
+          sprintf("Page %d \u2014 Panel (%d,%d): %.3f, %.3f to %.3f, %.3f",
+                  i + 1, row_i, col_i, bb[1], bb[3], bb[2], bb[4])
+        })
+        paste(lines, collapse = "\n")
+      }
+
+      # Cover page built with annotate calls for a clean, professional look
+      cover_bg    <- "#1a5c3a"
+      cover_light <- "#a8d5ba"
+
+      coverPlot <- ggplot() +
+        annotate("rect",  xmin = 0, xmax = 1, ymin = 0.87, ymax = 1,
+                 fill = cover_bg, color = NA) +
+        annotate("text",  x = 0.5, y = 0.945, label = "Barrio\u00a0Map",
+                 color = "white", size = 16, fontface = "bold", hjust = 0.5) +
+        annotate("text",  x = 0.5, y = 0.893,
+                 label = "Open-source mapping for communities",
+                 color = cover_light, size = 4.5, hjust = 0.5) +
+        annotate("segment", x = 0.08, xend = 0.92, y = 0.84, yend = 0.84,
+                 color = "#dddddd", linewidth = 0.4) +
+        annotate("text",  x = 0.08, y = 0.805, label = "Location",
+                 color = "#888888", size = 3.5, hjust = 0, fontface = "bold") +
+        annotate("text",  x = 0.08, y = 0.772,
+                 label = paste0(lat_lbl, ",  ", lng_lbl),
+                 color = "#222222", size = 5, hjust = 0) +
+        annotate("text",  x = 0.6, y = 0.805, label = "Scale",
+                 color = "#888888", size = 3.5, hjust = 0, fontface = "bold") +
+        annotate("text",  x = 0.6, y = 0.772,
+                 label = paste0("1:", format(as.numeric(rv$scale), big.mark = ",")),
+                 color = "#222222", size = 5, hjust = 0) +
+        annotate("text",  x = 0.08, y = 0.730, label = "Generated",
+                 color = "#888888", size = 3.5, hjust = 0, fontface = "bold") +
+        annotate("text",  x = 0.08, y = 0.697,
+                 label = format(Sys.time(), "%B %d, %Y at %I:%M %p"),
+                 color = "#222222", size = 5, hjust = 0) +
+        annotate("text",  x = 0.6, y = 0.730, label = "Page size",
+                 color = "#888888", size = 3.5, hjust = 0, fontface = "bold") +
+        annotate("text",  x = 0.6, y = 0.697,
+                 label = paste0(toupper(rv$page), " \u00b7 ", rv$dpi, " DPI"),
+                 color = "#222222", size = 5, hjust = 0) +
+        annotate("segment", x = 0.08, xend = 0.92, y = 0.665, yend = 0.665,
+                 color = "#dddddd", linewidth = 0.4) +
+        annotate("text",  x = 0.5, y = 0.635, label = "Your map code",
+                 color = "#888888", size = 3.5, hjust = 0.5, fontface = "bold") +
+        annotate("rect",  xmin = 0.28, xmax = 0.72, ymin = 0.575, ymax = 0.625,
+                 fill = "#f0f8f4", color = cover_bg, linewidth = 0.7) +
+        annotate("text",  x = 0.5, y = 0.600, label = map_code,
+                 color = cover_bg, size = 13, fontface = "bold", hjust = 0.5) +
+        annotate("text",  x = 0.5, y = 0.550,
+                 label = "Enter this code at barriomap.arizona.edu to restore this map.",
+                 color = "#555555", size = 3.5, hjust = 0.5) +
+        annotate("text",  x = 0.5, y = 0.527,
+                 label = "Codes are valid for 30 days.",
+                 color = "#888888", size = 3.2, hjust = 0.5) +
+        annotate("segment", x = 0.08, xend = 0.92, y = 0.50, yend = 0.50,
+                 color = "#dddddd", linewidth = 0.4) +
+        annotate("text",  x = 0.08, y = 0.475,
+                 label = if (is_single) "Area covered" else paste0("Panels (", n_panels, " total)"),
+                 color = "#888888", size = 3.5, hjust = 0, fontface = "bold") +
+        annotate("text",  x = 0.08, y = 0.455 - 0.018 * seq_len(length(strsplit(panel_lines, "\n")[[1]])),
+                 label = strsplit(panel_lines, "\n")[[1]],
+                 color = "#333333", size = 3, hjust = 0) +
+        annotate("segment", x = 0, xend = 1, y = 0.09, yend = 0.09,
+                 color = "#dddddd", linewidth = 0.3) +
+        annotate("text",  x = 0.5, y = 0.05,
+                 label = "barriomap.arizona.edu  \u00b7  Data from OpenStreetMap (ODbL)",
+                 color = "#bbbbbb", size = 3, hjust = 0.5, fontface = "italic") +
+        xlim(0, 1) + ylim(0, 1) +
+        theme_void() +
+        theme(plot.background = element_rect(fill = "white", color = NA),
+              plot.margin     = margin(0, 0, 0, 0))
+
+      ggsave(file.path(export_dir, "cover.pdf"),
+             plot = coverPlot, device = "pdf",
+             width = width_in, height = height_in, units = "in")
+
+      # FETCH OSM DATA (one call for the full extent, clip per panel later)
+      progress$inc(amount = 1,
+                   detail = "Fetching map data (first visit to a new region takes longer)")
+
+      full_bbox     <- c(min_lng, min_lat, max_lng, max_lat)
+      full_features <- tryCatch(
+        getOsmFeatures(full_bbox, input$features),
         error = function(e) {
           stop(safeError(paste0(
-            "Could not fetch map data for the overview page (", conditionMessage(e), "). ",
-            "Please try again."
+            "Could not fetch map data (", conditionMessage(e), "). Please try again."
           )))
         }
       )
-      roads_ov     <- overview_features$roads
-      buildings_ov <- overview_features$buildings
+      roads_full <- full_features$roads
+      blds_full  <- full_features$buildings
 
-      progress$inc(amount = 1, detail = "Drawing the overview page")
-      
-      all_panels_sf <- lapply(seq_len(nrow(rects)), function(i) {
-        bb <- rects[i, ]
-        st_polygon(list(matrix(c(
-          bb[1], bb[3],
-          bb[1], bb[4],
-          bb[2], bb[4],
-          bb[2], bb[3],
-          bb[1], bb[3]
-        ), ncol = 2, byrow = TRUE)))
-      })
-      overview_panels <- st_as_sf(st_sfc(all_panels_sf), crs = 4326)
-      
-      # Panel centers + labels with row-major numbering
-      centers_list <- lapply(seq_len(nrow(rects)), function(i) {
-        bb <- rects[i, ]
-        cx <- (bb[1] + bb[2]) / 2
-        cy <- (bb[3] + bb[4]) / 2
-        st_point(c(cx, cy))
-      })
-      panelCenters_sfc <- st_sfc(centers_list, crs = 4326)
-      
-      # Build row/col label
-      panelCenters_sf <- st_as_sf(
-        data.frame(
-          label = sapply(seq_len(nrow(rects)), function(i) {
+      # PAGE 2: OVERVIEW (only when multi-panel)
+      if (!is_single) {
+        progress$inc(amount = 1, detail = "Drawing the overview page")
+
+        all_panels_sf <- lapply(seq_len(n_panels), function(i) {
+          bb <- rects[i, ]
+          st_polygon(list(matrix(c(
+            bb[1], bb[3], bb[1], bb[4],
+            bb[2], bb[4], bb[2], bb[3], bb[1], bb[3]
+          ), ncol = 2, byrow = TRUE)))
+        })
+        overview_panels <- st_as_sf(st_sfc(all_panels_sf, crs = 4326))
+
+        centers_list <- lapply(seq_len(n_panels), function(i) {
+          bb <- rects[i, ]
+          st_point(c((bb[1] + bb[2]) / 2, (bb[3] + bb[4]) / 2))
+        })
+        panelCenters_sf <- st_as_sf(
+          data.frame(label = sapply(seq_len(n_panels), function(i) {
             row_i <- floor((i - 1) / rv$hpages) + 1
             col_i <- ((i - 1) %% rv$hpages) + 1
-            paste0("Panel (", row_i, ", ", col_i, ") => Pg ", i + 2)
-          })
-        ),
-        geometry = panelCenters_sfc
-      )
-      
-      overviewPlot <- ggplot() +
-        (if (!is.null(roads_ov))     geom_sf(data = roads_ov,     color = "darkgray", size = 0.5, alpha = 0.7)) +
-        (if (!is.null(buildings_ov)) geom_sf(data = buildings_ov, fill  = "gray90",   color = "gray40", size = 0.3, alpha = 0.8)) +
-        geom_sf(data = overview_panels, fill = NA, color = "red", size = 1) +
-        geom_sf_text(data = panelCenters_sf, aes(label = label), size = 4, color = "blue") +
-        
-        annotation_scale(location = "bl", width_hint = 0.2) +
-        annotation_north_arrow(location = "tl", which_north = "true",
-                               style = north_arrow_fancy_orienteering()) +
-        
-        coord_sf(
-          xlim = c(min_lng, max_lng),
-          ylim = c(min_lat, max_lat),
-          expand = FALSE
-        ) +
-        ggtitle("Overview Map (Page 2): All Panels Shown in Red") +
-        theme_minimal(base_size = 14) +
-        theme(
-          legend.position   = "bottom",
-          plot.title        = element_text(face = "bold", hjust = 0.5, size = 16),
-          plot.margin       = margin(10, 10, 10, 10),
-          axis.title        = element_blank(),
-          axis.text         = element_blank(),
-          panel.grid.major  = element_blank(),
-          panel.grid.minor  = element_blank()
+            paste0("(", row_i, ",", col_i, ")\nPg ", i + 1)
+          })),
+          geometry = st_sfc(centers_list, crs = 4326)
         )
-      
-      ggsave(
-        filename = file.path(export_dir, "overview.pdf"),
-        plot     = overviewPlot,
-        device   = "pdf",
-        width    = width_in,
-        height   = height_in,
-        units    = "in"
-      )
-      
-      #
-      # CREATE EACH PANEL PAGE (page #3+)
-      #
+
+        overviewPlot <- buildMapPlot(
+          roads_sf          = roads_full,
+          blds_sf           = blds_full,
+          xlim              = c(min_lng, max_lng),
+          ylim              = c(min_lat, max_lat),
+          title             = "Overview — all panels",
+          panel_outline_sf  = overview_panels,
+          show_panel_numbers = TRUE,
+          panel_centers_sf  = panelCenters_sf
+        )
+
+        ggsave(file.path(export_dir, "overview.pdf"),
+               plot = overviewPlot, device = "pdf",
+               width = width_in, height = height_in, units = "in")
+      }
+
+      # PANEL PAGES
       panel_files <- character(0)
-      for (i in seq_len(nrow(rects))) {
-        bb <- c(
-          rects[i, 1],
-          rects[i, 3],
-          rects[i, 2],
-          rects[i, 4]
-        )
-        
+      for (i in seq_len(n_panels)) {
+        bb <- c(rects[i, 1], rects[i, 3], rects[i, 2], rects[i, 4])
         row_i <- floor((i - 1) / rv$hpages) + 1
         col_i <- ((i - 1) %% rv$hpages) + 1
 
-        progress$inc(amount = 1, detail = paste0("Fetching data for panel ", i, " of ", nrow(rects)))
+        progress$inc(amount = 1, detail = paste0("Fetching data for panel ", i, " of ", n_panels))
 
-        panel_features <- tryCatch(
-          getOsmFeatures(bb, input$features),
-          error = function(e) {
-            stop(safeError(paste0(
-              "Could not fetch map data for panel (", row_i, ", ", col_i, "): ",
-              conditionMessage(e), ". Please try again."
-            )))
-          }
+        # Clip full-extent data to this panel bbox
+        panel_bbox_sf <- st_as_sfc(st_bbox(
+          c(xmin = bb[1], ymin = bb[2], xmax = bb[3], ymax = bb[4]), crs = 4326
+        ))
+        roads_sf <- if (!is.null(roads_full))
+          suppressWarnings(st_crop(roads_full, panel_bbox_sf)) else NULL
+        blds_sf  <- if (!is.null(blds_full))
+          suppressWarnings(st_crop(blds_full,  panel_bbox_sf)) else NULL
+
+        progress$inc(amount = 1, detail = paste0("Drawing panel ", i, " of ", n_panels))
+
+        panel_title <- if (is_single) {
+          paste0("1:", format(as.numeric(rv$scale), big.mark = ","),
+                 "  \u00b7  ", lat_lbl, ", ", lng_lbl)
+        } else {
+          paste0("Panel (", row_i, ",", col_i, ")  \u2014  Page ", i + 1)
+        }
+
+        panelPlot <- buildMapPlot(
+          roads_sf = roads_sf,
+          blds_sf  = blds_sf,
+          xlim     = c(bb[1], bb[3]),
+          ylim     = c(bb[2], bb[4]),
+          title    = panel_title
         )
-        roads_sf     <- panel_features$roads
-        buildings_sf <- panel_features$buildings
 
-        progress$inc(amount = 1, detail = paste0("Drawing panel ", i, " of ", nrow(rects)))
-        
-        panel_polygon <- st_as_sf(st_sfc(st_polygon(list(matrix(c(
-          bb[1], bb[2],
-          bb[1], bb[4],
-          bb[3], bb[4],
-          bb[3], bb[2],
-          bb[1], bb[2]
-        ), ncol = 2, byrow = TRUE)))), crs = 4326)
-        
-        panelPlot <- ggplot() +
-          (if (!is.null(roads_sf))     geom_sf(data = roads_sf,     color = "darkgray", size = 0.5, alpha = 0.7)) +
-          (if (!is.null(buildings_sf)) geom_sf(data = buildings_sf, fill = "gray90",    color = "gray40", size = 0.3, alpha = 0.8)) +
-          geom_sf(data = panel_polygon, fill = NA, color = "black", size = 1) +
-          
-          annotation_scale(location = "bl", width_hint = 0.2) +
-          annotation_north_arrow(location = "tl", which_north = "true",
-                                 style = north_arrow_fancy_orienteering()) +
-          
-          coord_sf(
-            xlim = c(bb[1], bb[3]),
-            ylim = c(bb[2], bb[4]),
-            expand = FALSE
-          ) +
-          ggtitle(paste0("Panel (", row_i, ", ", col_i, ") => Page ", i + 2)) +
-          theme_minimal(base_size = 14) +
-          theme(
-            legend.position   = "bottom",
-            plot.title        = element_text(face = "bold", hjust = 0.5, size = 16),
-            plot.margin       = margin(10, 10, 10, 10),
-            axis.title        = element_blank(),
-            axis.text         = element_blank(),
-            panel.grid.major  = element_blank(),
-            panel.grid.minor  = element_blank()
-          )
-        
         panel_pdf <- file.path(export_dir, paste0("panel_", i, ".pdf"))
-        ggsave(
-          filename = panel_pdf,
-          plot     = panelPlot,
-          device   = "pdf",
-          width    = width_in,
-          height   = height_in,
-          units    = "in"
-        )
-        
+        ggsave(panel_pdf, plot = panelPlot, device = "pdf",
+               width = width_in, height = height_in, units = "in")
         panel_files <- c(panel_files, panel_pdf)
       }
-      
-      #
-      # MERGE: instructions.pdf (page1) + overview.pdf (page2) + panels (page3+)
-      #
+
+      # LEGEND PAGE (optional)
+      legend_file <- character(0)
+      if (isTRUE(input$show_legend) && length(input$features) > 0) {
+        progress$inc(amount = 1, detail = "Building the legend")
+
+        legend_items <- data.frame(
+          x     = rep(0.15, length(input$features)),
+          y     = seq(0.65, by = -0.12, length.out = length(input$features)),
+          fill  = c(if ("roads"     %in% input$features) rv$roads_color else NULL,
+                    if ("buildings" %in% input$features) rv$bld_fill    else NULL),
+          label = c(if ("roads"     %in% input$features) "Roads" else NULL,
+                    if ("buildings" %in% input$features) "Buildings" else NULL)
+        )
+
+        legendPlot <- ggplot(legend_items) +
+          annotate("rect",  xmin = 0, xmax = 1, ymin = 0.85, ymax = 1,
+                   fill = "#1a5c3a", color = NA) +
+          annotate("text",  x = 0.5, y = 0.92, label = "Map Legend",
+                   color = "white", size = 10, fontface = "bold", hjust = 0.5) +
+          geom_rect(aes(xmin = x - 0.06, xmax = x + 0.06,
+                        ymin = y - 0.04, ymax = y + 0.04, fill = fill),
+                    color = "#333333", linewidth = 0.3) +
+          scale_fill_identity() +
+          geom_text(aes(x = x + 0.12, y = y, label = label),
+                    hjust = 0, size = 6, color = "#222222") +
+          annotate("text",  x = 0.5, y = 0.35,
+                   label = "Data source: OpenStreetMap contributors (ODbL)",
+                   size = 4, color = "#888888", hjust = 0.5) +
+          annotate("text",  x = 0.5, y = 0.28,
+                   label = paste0("Map code: ", map_code),
+                   size = 4.5, color = "#1a5c3a", fontface = "bold", hjust = 0.5) +
+          annotate("text",  x = 0.5, y = 0.10,
+                   label = "barriomap.arizona.edu",
+                   size = 4, color = "#aaaaaa", hjust = 0.5, fontface = "italic") +
+          xlim(0, 1) + ylim(0, 1) +
+          theme_void() +
+          theme(plot.background = element_rect(fill = "white", color = NA))
+
+        legend_pdf <- file.path(export_dir, "legend.pdf")
+        ggsave(legend_pdf, plot = legendPlot, device = "pdf",
+               width = width_in, height = height_in, units = "in")
+        legend_file <- legend_pdf
+      }
+
+      # MERGE ALL PAGES
       progress$inc(amount = 1, detail = "Putting the PDF together")
-      tmp_files <- c(file.path(export_dir, "instructions.pdf"),
-                     file.path(export_dir, "overview.pdf"),
-                     panel_files)
+
+      overview_file <- if (!is_single) file.path(export_dir, "overview.pdf") else character(0)
+      tmp_files <- c(
+        file.path(export_dir, "cover.pdf"),
+        overview_file,
+        panel_files,
+        legend_file
+      )
       merged_pdf <- file.path(export_dir, "barrio_temp.pdf")
       qpdf::pdf_combine(input = tmp_files, output = merged_pdf)
-      
-      # Fail loudly instead of handing back a truncated or empty PDF
-      if (!file.exists(merged_pdf) || file.info(merged_pdf)$size == 0) {
+
+      if (!file.exists(merged_pdf) || file.info(merged_pdf)$size == 0)
         stop(safeError("The PDF export did not complete. Please try again."))
-      }
-      
+
+      # SAVE MAP CODE AND SHOW MODAL
+      saveMapCode(map_code, list(
+        latitude    = rv$latitude,
+        longitude   = rv$longitude,
+        scale       = rv$scale,
+        pageH       = rv$pageH,
+        pageW       = rv$pageW,
+        page        = rv$page,
+        vpages      = rv$vpages,
+        hpages      = rv$hpages,
+        dpi         = rv$dpi,
+        features    = input$features,
+        roads_color = rv$roads_color,
+        bld_fill    = rv$bld_fill,
+        bld_border  = rv$bld_border,
+        show_north  = rv$show_north,
+        show_scale  = rv$show_scale,
+        show_coords = rv$show_coords,
+        show_legend = rv$show_legend
+      ))
+
       file.copy(merged_pdf, file, overwrite = TRUE)
+
+      showModal(modalDialog(
+        title = NULL, footer = modalButton("Got it!"), easyClose = TRUE,
+        tags$div(
+          style = "text-align: center; padding: 10px 20px 20px;",
+          tags$div(style = "font-size: 13px; color: #888; margin-bottom: 8px;",
+                   "Your map is ready \u2014 save this code to come back to it"),
+          tags$div(
+            style = paste0(
+              "font-size: 2.2em; font-weight: 800; letter-spacing: 6px;",
+              " color: #1a5c3a; padding: 14px 20px;",
+              " background: #f0f8f4; border-radius: 8px;",
+              " border: 2px solid #1a5c3a; margin: 10px auto; display: inline-block;"
+            ),
+            map_code
+          ),
+          tags$p(style = "color: #555; font-size: 13px; margin-top: 10px;",
+                 "Enter this at barriomap.arizona.edu to restore your exact map settings."),
+          tags$p(style = "color: #aaa; font-size: 11px;", "Valid for 30 days.")
+        )
+      ))
     }
   )
 }

@@ -1,301 +1,394 @@
 ###################
 # ui.R
-# 
-# UI controller. 
-# Used to define the graphical aspects of the app.
+#
+# UI controller.
 ###################
 
-ui <- navbarPage(
-  title = "Barrio Map",
-  theme = bslib::bs_theme(version = 4, bootswatch = "minty"),
+# Ensure shared constants (ROAD_COLORS etc.) are available even when ui.R
+# is sourced before server.R in app.R.
+if (!exists("ROAD_COLORS")) source("functions/functions.R")
 
-  # HOME TAB
-  tabPanel(
-    shinybusy::add_busy_spinner(spin = "dots",
-                     timeout = 10,
-                     height = "25px",
-                     width = "25px"),
-    "Welcome",
-    fluidPage(
-      # Centered container
-      tags$div(
-        style = "max-width: 800px; margin: 0 auto; padding: 40px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333333; line-height: 1.6;",
-        
-        # Title and subtitle
-        tags$h1(
-          style = "font-size: 48px; font-weight: 300; margin-bottom: 10px; text-align: center;",
-          "Barrio Map"
-        ),
-        tags$h3(
-          style = "font-size: 24px; font-weight: 300; margin-bottom: 40px; text-align: center; color: #555555;",
-          "A Community-Focused Tool for Planning & Design"
-        ),
-        
-        # BOX 1
-        tags$div(
-          style = "background-color: #f9f9f9; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1);",
-          tags$h4("Welcome to Barrio Map!", align = "center"),
-          tags$p(
-            "If you are searching for a simple map for community projects, this is the place. Made with urban planners, architects, and designers in mind, Barrio Map helps you print maps to typical scales used in planning (1\"=50’, etc.), print large sheet sizes (24\"x36\", etc.), and export them in easily edited formats (PDF and vectors)."
-          ),
-          tags$p(
-            "Barrio Map bridges the gap between open-access mapping and formal planning efforts—whether you’re an architecture student or a community member leading a grassroots project. We aim to make professional-style maps more accessible while staying open-source."
-          )
-        ),
-        
-        # BOX 2
-        tags$div(
-          style = "background-color: #ffffff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1);",
-          tags$h4("Technical Details"),
-          tags$p(
-            "Barrio Map includes fundamental functionalities like location searches or coordinate-based navigation. Users can choose predefined scales, select page sizes, and export maps at specific resolutions. Created in R, Barrio Map leverages Leaflet, Shiny, and other packages to deliver a straightforward and reliable mapping experience."
-          ),
-          tags$h4("Why Barrio Map? Why Open Source?"),
-          tags$p(
-            "Traditional planning practices often rely on licensed software to filter and interpret open-source map data. Our goal is to simplify the process by offering a web-based, open-source platform that anyone can use—reducing the barriers to producing professional-quality maps."
-          )
-        ),
-        
-        # BOX 3
-        tags$div(
-          style = "background-color: #f9f9f9; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1);",
-          tags$h4("Ready to Explore?"),
-          tags$p(
-            "Navigate to the 'Create your map!' tab to start generating scalable, printable maps. Simply select a location, scale, and page size, then export or print as needed. We hope Barrio Map empowers communities, students, and professionals to share and develop spatial knowledge."
-          )
-        )
-      )
-    )
+ui <- navbarPage(
+  title = tags$span(
+    style = "font-weight: 700; color: #1a5c3a; letter-spacing: -0.5px;",
+    "Barrio\u00a0Map"
   ),
-  
-  # CREATE YOUR MAP TAB
+  id       = "main_nav",
+  selected = "Map",
+  theme    = bslib::bs_theme(
+    version    = 4,
+    bootswatch = "minty",
+    primary    = "#1a5c3a",
+    heading_font = bslib::font_google("Inter", wght = c(400, 600, 700))
+  ),
+
+  # MAP TAB: first thing users see
   tabPanel(
-    "Create your map!",
+    "Map",
+    value = "Map",
+
+    shinybusy::add_busy_spinner(spin = "dots", timeout = 300,
+                                height = "22px", width = "22px"),
+
     fluidPage(
-      tags$head(tags$script(defer = NA,
-      src = "https://umami.datadiversitylab.synology.me/script.js",
-      `data-website-id` = "543cffef-a100-47af-9dd9-2cf39517077b",
-      `data-domains` = "datadiversitylab.github.io",
-      `data-tag` = "barriomap"
-    ),
+      tags$head(
+        tags$script(defer = NA,
+          src = "https://umami.datadiversitylab.synology.me/script.js",
+          `data-website-id` = "543cffef-a100-47af-9dd9-2cf39517077b",
+          `data-domains`    = "datadiversitylab.github.io",
+          `data-tag`        = "barriomap"
+        ),
         tags$style(HTML("
-        /* A subtle box shadow for the map container */
-        #mapContainer {
-          box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-          position: relative;
-        }
-        
-        /* An absolute panel with a semi-transparent white background */
-        .mapControlPanel {
-          background-color: rgba(255, 255, 255, 0.9);
-          padding: 15px 20px;
-          border-radius: 8px;
-          box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-        }
-        
-        /* Steps list spacing */
-        .steps-list li {
-          margin-bottom: 10px;
-        }
-        
-        /* Big box (well) for instructions */
-        .instructions-box {
-          max-width: 800px;
-          margin: 0 auto 20px auto;
-          padding: 30px;
-          background-color: #f8f9fa;
-          border: 1px solid #ccc;
-          border-radius: 6px;
-        }
-        
-        /* Enhanced title styling */
-        .instructions-title {
-          font-size: 1.75em;
-          font-weight: bold;
-          text-align: center;
-          margin-bottom: 20px;
-        }
-      "))
+          body { font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; }
+
+          .navbar { border-bottom: 3px solid #1a5c3a; }
+          .navbar-brand { font-size: 1.25rem; }
+
+          /* Welcome strip */
+          .bm-welcome {
+            background: linear-gradient(135deg, #f0f8f4 0%, #e8f5e9 100%);
+            border-bottom: 1px solid #c8e6c9;
+            padding: 10px 20px;
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 6px;
+          }
+          .bm-welcome-main {
+            font-size: 14px; color: #1a5c3a; font-weight: 600; margin: 0;
+          }
+          .bm-welcome-sub {
+            font-size: 12px; color: #666; margin: 0;
+          }
+          .bm-welcome-note {
+            font-size: 11px; color: #888; background: #fff;
+            border: 1px solid #c8e6c9; border-radius: 4px;
+            padding: 4px 10px; white-space: nowrap;
+          }
+
+          /* Map container */
+          #mapContainer {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+            position: relative;
+          }
+
+          /* Control panels */
+          .bm-panel {
+            background: rgba(255,255,255,0.97);
+            padding: 14px 16px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+          }
+          .bm-panel::-webkit-scrollbar { width: 4px; }
+          .bm-panel::-webkit-scrollbar-thumb {
+            background: #c8e6c9; border-radius: 2px;
+          }
+
+          .bm-section-label {
+            font-size: 10px; font-weight: 700; letter-spacing: 0.8px;
+            text-transform: uppercase; color: #1a5c3a;
+            margin: 10px 0 4px; padding-top: 8px;
+            border-top: 1px solid #e8f5e9;
+          }
+          .bm-section-label:first-child { margin-top: 0; border-top: none; }
+
+          .form-group { margin-bottom: 8px; }
+          .form-group label { font-size: 12px; color: #444; margin-bottom: 2px; }
+
+          /* Download button */
+          #print {
+            width: 100%; margin-top: 10px;
+            background: #1a5c3a; border-color: #1a5c3a;
+            font-weight: 600; border-radius: 6px;
+            padding: 8px 0; font-size: 14px;
+          }
+          #print:hover { background: #155230; }
+
+          /* Color swatches next to selects */
+          .color-row { display: flex; align-items: center; gap: 8px; }
+          .color-swatch {
+            width: 18px; height: 18px; border-radius: 3px;
+            border: 1px solid #ccc; flex-shrink: 0;
+          }
+
+          /* Map code box */
+          .bm-code-box {
+            background: #f0f8f4; border: 1px solid #1a5c3a;
+            border-radius: 6px; padding: 8px 12px; margin: 6px 0;
+            font-size: 18px; font-weight: 800; letter-spacing: 4px;
+            color: #1a5c3a; text-align: center;
+          }
+
+          /* Checkbox group tighter */
+          .checkbox-group-inline label { margin-bottom: 2px; }
+        "))
       ),
-      
-      # Main map container
+
+      # Welcoming strip
+      tags$div(
+        class = "bm-welcome",
+        tags$div(
+          tags$p(class = "bm-welcome-main",
+                 "Your neighborhood. Your map."),
+          tags$p(class = "bm-welcome-sub",
+                 "Search for a place, pick a scale, and download a PDF ready to print.")
+        ),
+        tags$div(
+          class = "bm-welcome-note",
+          tags$strong("Why is it slow?"),
+          " Your map pulls real, fresh data from OpenStreetMap just for your area.",
+          " Once a region is cached it\u2019s much faster."
+        )
+      ),
+
+      # Map + control panels
       tags$div(
         id = "mapContainer",
-        leaflet::leafletOutput("map", height = "600px"),
-        
-        # Primary controls (location, scale, printing, etc.)
+        leaflet::leafletOutput("map", height = "565px"),
+
+        # Main controls (left)
         absolutePanel(
-          id = "mapControls",
-          class = "mapControlPanel",
-          top = 40, left = 40, width = 300,
+          class    = "bm-panel",
+          top = 16, left = 16, width = 270,
           draggable = TRUE,
-          
+
           shinyjs::useShinyjs(),
-          
-          # Toggle for defining coordinates or search
-          checkboxInput("usecoordinates", "Define coordinates", TRUE),
-          
-          # Frame fix
-          checkboxInput("fixframe", "Fix frame", value = FALSE),
-          
-          # Lat/Long inputs OR a search box, using conditionalPanel
+
+          # LOCATION
+          tags$div(class = "bm-section-label", "Location"),
+
+          checkboxInput("usecoordinates", "Use coordinates", TRUE),
+          checkboxInput("fixframe",       "Lock frame",      FALSE),
+
           conditionalPanel(
             condition = "input.usecoordinates == true",
             fluidRow(
-              column(
-                width = 6,
-                numericInput("latitude", "Lat", value = 0, width = "100%")
-              ),
-              column(
-                width = 6,
-                numericInput("longitude", "Lon", value = 0, width = "100%")
-              )
+              column(6, numericInput("latitude",  "Lat", value = 0, width = "100%")),
+              column(6, numericInput("longitude", "Lon", value = 0, width = "100%"))
             )
           ),
-          
           conditionalPanel(
             condition = "input.usecoordinates == false",
-            textInput("searchbox", "Search for a location", "")
+            textInput("searchbox", "Search", placeholder = "City, address\u2026")
           ),
-          
-          # Basic page and orientation settings
-          selectInput(
-            "page", "Page size",
-            choices = c("A4" = "a4", "A3" = "a3", "Other" = "other")
-          ),
-          selectInput(
-            "orientation", "Page orientation",
-            choices = c("Vertical" = "v", "Horizontal" = "h")
-          ),
-          
-          numericInput("pageH", "Page height", value = 0.267),
-          numericInput("pageW", "Page width",  value = 0.18),
-          
-          # Scale input
-          selectInput(
-            "scale", "Define scale (1:x m)",
-            choices = c("1:5,840" = 5840, "1:600" = 600, "1:384" = 384)
-          ),
-          
-          # Adjusting OSM layers
-          checkboxInput("showLayerSettings", "Select layers", FALSE),
-          
-          # More settings
-          checkboxInput("showMoreSettings", "More settings", FALSE),
-          
-          # Download PDF button
-          downloadButton("print", "Download PDF", class = "btn-primary")
+
+          # PAGE
+          tags$div(class = "bm-section-label", "Page"),
+
+          selectInput("page", NULL,
+                      choices = c("A4" = "a4", "A3" = "a3", "Custom" = "other")),
+          selectInput("orientation", NULL,
+                      choices = c("Portrait" = "v", "Landscape" = "h")),
+          numericInput("pageH", "Height (m)", value = 0.267),
+          numericInput("pageW", "Width (m)",  value = 0.18),
+
+          # SCALE
+          tags$div(class = "bm-section-label", "Scale"),
+
+          selectInput("scale", NULL,
+                      choices = c("1:5,840" = 5840, "1:600" = 600, "1:384" = 384)),
+
+          # TOGGLES
+          tags$div(class = "bm-section-label", "Settings"),
+
+          checkboxInput("showMoreSettings",  "More settings",  FALSE),
+          checkboxInput("showPrintSettings", "Print settings", FALSE),
+          checkboxInput("showCodePanel",     "Map code",       FALSE),
+
+          downloadButton("print", "\u2193 Download PDF")
         ),
-        
-        # The advanced printing settings panel, shown only if showMoreSettings == TRUE
+
+        # More settings panel
         conditionalPanel(
           condition = "input.showMoreSettings == true",
           absolutePanel(
-            id = "mapControlsAdvanced",
-            class = "mapControlPanel",
-            top = 40, left = 360, width = 300,
+            class = "bm-panel",
+            top = 16, left = 302, width = 230,
             draggable = TRUE,
-            
-            tags$h4("Advanced Settings", style = "margin-top: 0;"),
-            
-            # DPI input
-            numericInput("dpi", "DPI (dots per inch)", 300, min = 72, step = 1),
-            
-            # Additional pages
-            numericInput("vpages", "Number of vertical pages", value = 1, min = 1),
-            numericInput("hpages", "Number of horizontal pages", value = 1, min = 1)
+
+            tags$div(class = "bm-section-label", "Output"),
+            numericInput("dpi", "Resolution (DPI)", 300, min = 72, step = 1),
+
+            tags$div(class = "bm-section-label", "Panels"),
+            numericInput("vpages", "Rows",    value = 1, min = 1),
+            numericInput("hpages", "Columns", value = 1, min = 1)
           )
         ),
-        
-        # The layers settings panel, shown only if showLayerSettings == TRUE
+
+        # Print settings panel
         conditionalPanel(
-          condition = "input.showLayerSettings == true",
+          condition = "input.showPrintSettings == true",
           absolutePanel(
-            id = "mapControlsLayers",
-            class = "mapControlPanel",
-            top = 40, left = 680, width = 320,
+            class = "bm-panel",
+            top = 16, left = 302, width = 260,
             draggable = TRUE,
-            
-            # Main heading with minimal margin
-            tags$h4("Select OSM Layers to Export", style = "margin-top: 5px; margin-bottom: 10px;"),
-            
+
+            # Layers
+            tags$div(class = "bm-section-label", "Layers to export"),
+
             checkboxGroupInput(
-              "features", 
-              "Select features:",
-              choices = c("Roads" = "roads", "Buildings" = "buildings"),
+              "features", NULL,
+              choices  = c("Roads" = "roads", "Buildings" = "buildings"),
               selected = c("roads", "buildings")
-            )
+            ),
+
+            conditionalPanel(
+              condition = "input.features && input.features.indexOf('roads') >= 0",
+              tags$div(class = "bm-section-label", "Road color"),
+              selectInput("roads_color", NULL,
+                          choices  = ROAD_COLORS,
+                          selected = "#555555")
+            ),
+
+            conditionalPanel(
+              condition = "input.features && input.features.indexOf('buildings') >= 0",
+              tags$div(class = "bm-section-label", "Building fill"),
+              selectInput("bld_fill", NULL,
+                          choices  = BLD_FILL_COLORS,
+                          selected = "#f2f2f2"),
+              tags$div(class = "bm-section-label", "Building outline"),
+              selectInput("bld_border", NULL,
+                          choices  = BLD_BORDER_COLORS,
+                          selected = "#aaaaaa")
+            ),
+
+            # Map elements
+            tags$div(class = "bm-section-label", "Include in PDF"),
+
+            checkboxInput("show_north",  "North arrow",        TRUE),
+            checkboxInput("show_scale",  "Scale bar",          TRUE),
+            checkboxInput("show_coords", "Coordinate labels",  TRUE),
+            checkboxInput("show_legend", "Legend page",        TRUE)
+          )
+        ),
+
+        # Map code panel
+        conditionalPanel(
+          condition = "input.showCodePanel == true",
+          absolutePanel(
+            class = "bm-panel",
+            top = 16, right = 16, width = 240,
+            draggable = TRUE,
+
+            tags$div(class = "bm-section-label", "Restore a map"),
+            tags$p(style = "font-size: 11px; color: #666; margin-bottom: 6px;",
+                   "Enter a 6-character code from a previous download to restore your map settings."),
+            textInput("map_code_input", NULL,
+                      placeholder = "e.g. HX4K2M"),
+            actionButton("restore_map_btn", "Restore map",
+                         class = "btn btn-outline-success btn-sm btn-block"),
+            tags$p(style = "font-size: 10px; color: #aaa; margin-top: 6px;",
+                   "Codes are valid for 30 days after download.")
           )
         )
-        
       )
     )
   ),
-  
-  # ABOUT US TAB
+
+  # ABOUT TAB
   tabPanel(
-    "About us",
+    "About",
     fluidPage(
       tags$div(
-        style = "max-width: 800px; margin: 0 auto; padding: 40px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333333;",
-        tags$h4("About us", align = "center"),
-        tags$ul(
-          tags$li("Sarthak Haldar: Graduate Student in Data Science at the School of Information, University of Arizona—works with ML, NLP, Data Mining, and visualization."),
-          tags$li("Mackenzie Waller: Landscape architect, urban designer, and assistant professor at CAPLA, University of Arizona—researches environmental/spatial justice, community-led design strategies, and interdisciplinary approaches to public space."),
-          tags$li("Cristian Roman-Palacios: Assistant Professor of Practice at the School of Information, University of Arizona—uses statistics, bioinformatics, and ML for ecological and evolutionary questions, and applies those techniques to GIS and societal tools like Barrio Map.")
+        style = paste0(
+          "max-width: 720px; margin: 40px auto; padding: 0 20px;",
+          " font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;",
+          " color: #333; line-height: 1.7;"
         ),
-        tags$br(),
-        tags$h5("Acknowledgements", align = "center"),
-        tags$h6(
-          "Hosting Barrio Map is made possible by support from the University of Arizona. We appreciate their help with funding, hosting space, or hardware resources to advance our vision for accessible mapping."
+
+        tags$h2(style = "color: #1a5c3a; font-weight: 700; margin-bottom: 4px;",
+                "Barrio Map"),
+        tags$p(style = "color: #888; font-size: 15px; margin-bottom: 32px;",
+               "Open-source mapping for communities"),
+
+        tags$div(
+          style = "background: #f0f8f4; border-left: 4px solid #1a5c3a; padding: 16px 20px; border-radius: 0 8px 8px 0; margin-bottom: 24px;",
+          tags$p(style = "margin: 0; font-size: 14px;",
+                 "Barrio Map helps urban planners, architects, designers, students, and community organizers produce professional-quality maps from open data. No license fees. No software to install. Just a place to put your neighborhood on paper at a real scale.")
+        ),
+
+        tags$h4(style = "color: #1a5c3a; margin-top: 28px;", "Why it\u2019s slow"),
+        tags$p(style = "font-size: 14px;",
+               "Every map pulls fresh, real geometry from OpenStreetMap for exactly your area. The first time you export a region, the app downloads the regional extract (for a US state, that\u2019s hundreds of MB). Repeat exports in the same session skip that step. We think accurate, sourced data is worth the wait."),
+
+        tags$h4(style = "color: #1a5c3a; margin-top: 28px;", "What you get"),
+        tags$ul(
+          style = "font-size: 14px; padding-left: 20px;",
+          tags$li("Print-ready vector PDFs at real planning scales (1\u201d = 50\u2019, 1:600, and more)"),
+          tags$li("A4 and A3 sheet sizes, portrait or landscape"),
+          tags$li("Roads and buildings from OpenStreetMap, color-customizable"),
+          tags$li("Multi-panel tiling for large sites"),
+          tags$li("A unique map code to share and restore your exact settings for 30 days")
+        ),
+
+        tags$h4(style = "color: #1a5c3a; margin-top: 28px;", "Who we are"),
+        tags$ul(
+          style = "font-size: 14px; padding-left: 20px;",
+          tags$li(tags$strong("Sarthak Haldar"), " \u2014 Graduate Student in Data Science, School of Information, University of Arizona"),
+          tags$li(tags$strong("Mackenzie Waller"), " \u2014 Landscape architect, urban designer, and assistant professor at CAPLA, University of Arizona"),
+          tags$li(tags$strong("Cristian Roman-Palacios"), " \u2014 Assistant Professor of Practice, School of Information, University of Arizona")
+        ),
+
+        tags$h4(style = "color: #1a5c3a; margin-top: 28px;", "Acknowledgements"),
+        tags$p(style = "font-size: 14px;",
+               "Hosting made possible with support from the University of Arizona. Map data from OpenStreetMap contributors, published under the Open Database License (ODbL)."),
+
+        tags$div(
+          style = "margin-top: 32px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #aaa;",
+          tags$a(href = "https://github.com/datadiversitylab/BarrioMap",
+                 target = "_blank", style = "color: #1a5c3a;",
+                 "Source code on GitHub"),
+          "  \u00b7  viz.datascience.arizona.edu/barriomap"
         )
       )
     )
   ),
-  
-  # MORE -> GITHUB TAB
-  navbarMenu("More",
-             tabPanel(
-               "GitHub",
-               fluidPage(
-                 tags$div(
-                   style = "max-width: 800px; margin: 0 auto; padding: 40px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333333;",
-                   tags$h4("GitHub", align = "center"),
-                   tags$p(
-                     "Barrio Map is an open-source web application for mapping and formal planning. Designed for simplicity, performance, and usability, it runs on major desktop and mobile platforms. The source code is available on GitHub, and you’ll need RStudio to run it locally."
-                   ),
-                   tags$ul(
-                     tags$li("Create a new project in RStudio and select Version Control -> Git."),
-                     tags$li("Paste the repository link to import the relevant files."),
-                     tags$li("Run the application.")
-                   ),
-                   tags$p(
-                     "We welcome pull requests, bug reports, improvements to documentation, and general feedback. Spread the word about Barrio Map to your network so we can keep expanding and improving this resource."
-                   )
-                 )
-               )
-             ),
-             
-             # MORE -> ADDITIONAL RESOURCES TAB
-             tabPanel(
-               "Additional resources",
-               fluidPage(
-                 tags$div(
-                   style = "max-width: 800px; margin: 0 auto; padding: 40px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333333;",
-                   tags$h4("Additional resources", align = "center"),
-                   tags$p("Below are other relevant mapping applications available online, each with different focuses and features:"),
-                   tags$ul(
-                     tags$li("RapiD (https://mapwith.ai/): Uses AI for feature detection in satellite imagery; requires an official OSM account to use."),
-                     tags$li("Inkatlas (https://inkatlas.com/): Helps create print-ready maps but is a paid, proprietary service."),
-                     tags$li("PrintMaps (https://www.printmaps.net/): Allows exporting maps in multiple formats for a fee."),
-                     tags$li("Milvusmap (http://milvusmap.eu/): Exports PDFs of maps but offers limited overlap with formal planning practices."),
-                     tags$li("FieldPapers (http://fieldpapers.org/compose#10/33.5345/-111.9603): Creates printable PDF maps, though less aligned with traditional planning approaches.")
-                   )
-                 )
-               )
+
+  # MORE MENU
+  navbarMenu(
+    "More",
+    tabPanel(
+      "Run it locally",
+      fluidPage(
+        tags$div(
+          style = "max-width: 720px; margin: 40px auto; padding: 0 20px; font-family: 'Inter', Arial, sans-serif; color: #333; line-height: 1.7;",
+          tags$h4(style = "color: #1a5c3a;", "Run Barrio Map locally"),
+          tags$p(style = "font-size: 14px;",
+                 "You need R and RStudio. Once those are installed:"),
+          tags$ol(
+            style = "font-size: 14px; padding-left: 20px;",
+            tags$li("In RStudio, go to File \u2192 New Project \u2192 Version Control \u2192 Git"),
+            tags$li(tags$code("https://github.com/datadiversitylab/BarrioMap")),
+            tags$li("Open the project and run ", tags$code("app.R"))
+          ),
+          tags$p(style = "font-size: 14px;",
+                 "Pull requests, bug reports, and documentation improvements are welcome.")
+        )
+      )
+    ),
+    tabPanel(
+      "Other tools",
+      fluidPage(
+        tags$div(
+          style = "max-width: 720px; margin: 40px auto; padding: 0 20px; font-family: 'Inter', Arial, sans-serif; color: #333; line-height: 1.7;",
+          tags$h4(style = "color: #1a5c3a;", "Other mapping tools"),
+          tags$p(style = "font-size: 14px;",
+                 "These are worth knowing, each with a different focus:"),
+          tags$ul(
+            style = "font-size: 14px; padding-left: 20px;",
+            tags$li(tags$a("RapiD", href = "https://mapwith.ai/", target = "_blank"),
+                    " \u2014 AI-assisted OSM editing, requires an OSM account"),
+            tags$li(tags$a("Inkatlas", href = "https://inkatlas.com/", target = "_blank"),
+                    " \u2014 print-ready maps, paid service"),
+            tags$li(tags$a("PrintMaps", href = "https://www.printmaps.net/", target = "_blank"),
+                    " \u2014 multi-format export, paid"),
+            tags$li(tags$a("Field Papers", href = "http://fieldpapers.org/", target = "_blank"),
+                    " \u2014 printable PDFs, limited planning overlap"),
+            tags$li(tags$a("Milvusmap", href = "http://milvusmap.eu/", target = "_blank"),
+                    " \u2014 PDF export, limited scale control")
+          )
+        )
+      )
     )
   )
 )
-
-
-
