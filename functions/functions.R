@@ -1,373 +1,413 @@
-getBox <- function(m){
-  view <- m$x$setView
-  lat <- view[[1]][1]
-  lng <- view[[1]][2]
-  zoom <- view[[2]]
+# ============================================================
+# functions.R — Shared functions and constants for BarrioMap
+# ============================================================
+
+`%||%` <- function(x, y) if (!is.null(x) && length(x) > 0 && !all(is.na(x)) && nzchar(x[1])) x else y
+
+
+# -----------------------------------------------------------
+# Scale geometry (offscreen Leaflet approach)
+# -----------------------------------------------------------
+
+getBox <- function(m) {
+  view      <- m$x$setView
+  lat       <- view[[1]][1]
+  lng       <- view[[1]][2]
+  zoom      <- view[[2]]
   zoom_width <- 360 / 2^zoom
-  lng_width <- m$width / 256 * zoom_width
+  lng_width  <- m$width  / 256 * zoom_width
   lat_height <- m$height / 256 * zoom_width
-  return(c(lng - lng_width/2, lng + lng_width/2, lat - lat_height/2, lat + lat_height/2))
+  c(lng - lng_width/2, lng + lng_width/2, lat - lat_height/2, lat + lat_height/2)
 }
 
-
-adjustlong <- function(map = recMap,  nRecLon){
-  
-  bx1 <- getBox(map)
+adjustlong <- function(map = recMap, nRecLon) {
+  bx1    <- getBox(map)
   center <- map$x$setView[[1]][2]
-  
-  #Estimate distance
   TotDist <- abs(bx1[1] - bx1[2])
-  
-  if((nRecLon %% 2) == 0) {
-    #If nRec is even
-    boundaries_west <- list(center)
-    for(i in 2:(1+round(nRecLon/2))){
-      boundaries_west[[i]] <- boundaries_west[[i-1]] - TotDist
-    }
-    
-    boundaries_east <- list(center)
-    for(i in 2:(1+round(nRecLon/2))){
-      boundaries_east[[i]] <- boundaries_east[[i-1]] + TotDist
-    }
-    limits <- sort(c(unlist(boundaries_west), unlist(boundaries_east)))
-    
-    
-  }else{ 
-    #If nRecLon is odd
-    boundaries_west <- list()
-    for(i in 1:ceiling(nRecLon/2)){
-      if(i ==1){
-        boundaries_west[[i]] <- bx1[1]
-      }else{
-        boundaries_west[[i]] <- boundaries_west[[i-1]] - TotDist
-      }
-    }
-    
-    boundaries_east <- list()
-    for(i in 1:ceiling(nRecLon/2)){
-      if(i ==1){
-        boundaries_east[[i]] <- bx1[2]
-      }else{
-        boundaries_east[[i]] <- boundaries_east[[i-1]] + TotDist
-      }
-    }
-    limits <- sort(c(unlist(boundaries_west), unlist(boundaries_east)))
+  if ((nRecLon %% 2) == 0) {
+    bw <- list(center); for (i in 2:(1 + round(nRecLon/2))) bw[[i]] <- bw[[i-1]] - TotDist
+    be <- list(center); for (i in 2:(1 + round(nRecLon/2))) be[[i]] <- be[[i-1]] + TotDist
+    limits <- sort(c(unlist(bw), unlist(be)))
+  } else {
+    bw <- list(); for (i in 1:ceiling(nRecLon/2)) bw[[i]] <- if (i==1) bx1[1] else bw[[i-1]] - TotDist
+    be <- list(); for (i in 1:ceiling(nRecLon/2)) be[[i]] <- if (i==1) bx1[2] else be[[i-1]] + TotDist
+    limits <- sort(c(unlist(bw), unlist(be)))
   }
-  
   unique(limits)
-  
 }
-adjustlat <- function(map = recMap,  nRecVert){
-  
-  bx1 <- getBox(map)
+
+adjustlat <- function(map = recMap, nRecVert) {
+  bx1    <- getBox(map)
   center <- map$x$setView[[1]][1]
-  
-  #Estimate distance
   TotDist <- abs(bx1[3] - bx1[4])
-  
-  if((nRecVert %% 2) == 0) {
-    #If nRecVert is even
-    
-    boundaries_south <- list(center)
-    for(i in 2:(1+round(nRecVert/2))){
-      boundaries_south[[i]] <- boundaries_south[[i-1]] - TotDist
-    }
-    
-    boundaries_north <- list(center)
-    for(i in 2:(1+round(nRecVert/2))){
-      boundaries_north[[i]] <- boundaries_north[[i-1]] + TotDist
-    }
-    limits <- sort(c(unlist(boundaries_south), unlist(boundaries_north)))
-    
-    
-  }else{ 
-    #If nRecVert is odd
-    boundaries_south <- list()
-    for(i in 1:ceiling(nRecVert/2)){
-      if(i ==1){
-        boundaries_south[[i]] <- bx1[3]
-      }else{
-        boundaries_south[[i]] <- boundaries_south[[i-1]] - TotDist
-      }
-    }
-    
-    boundaries_north <- list()
-    for(i in 1:ceiling(nRecVert/2)){
-      if(i ==1){
-        boundaries_north[[i]] <- bx1[4]
-      }else{
-        boundaries_north[[i]] <- boundaries_north[[i-1]] + TotDist
-      }
-    }
-    limits <- sort(c(unlist(boundaries_south), unlist(boundaries_north)))
+  if ((nRecVert %% 2) == 0) {
+    bs <- list(center); for (i in 2:(1 + round(nRecVert/2))) bs[[i]] <- bs[[i-1]] - TotDist
+    bn <- list(center); for (i in 2:(1 + round(nRecVert/2))) bn[[i]] <- bn[[i-1]] + TotDist
+    limits <- sort(c(unlist(bs), unlist(bn)))
+  } else {
+    bs <- list(); for (i in 1:ceiling(nRecVert/2)) bs[[i]] <- if (i==1) bx1[3] else bs[[i-1]] - TotDist
+    bn <- list(); for (i in 1:ceiling(nRecVert/2)) bn[[i]] <- if (i==1) bx1[4] else bn[[i-1]] + TotDist
+    limits <- sort(c(unlist(bs), unlist(bn)))
   }
-  
   unique(limits)
-  
 }
-returnRectangles <- function(map = recMap, nRecLon, nRecVert ){
-  
-  if(nRecLon == 1 & nRecVert == 1){
+
+returnRectangles <- function(map = recMap, nRecLon, nRecVert) {
+  if (nRecLon == 1 & nRecVert == 1) {
     coords <- getBox(map)
-    rectangles <- cbind(coords[1] , coords[2], coords[3] , coords[4])
-    rectangles
+    return(cbind(coords[1], coords[2], coords[3], coords[4]))
   }
-  
-  if(nRecLon > 1 & nRecVert > 1) {
-    lng <- adjustlong(map = map,  nRecLon = nRecLon)
-    lat <- adjustlat(map = map,  nRecVert = nRecVert)
-    
-    rectangles <- do.call(rbind,lapply(1:(nRecLon), function(i){
-      do.call(rbind, lapply(1:nRecVert, function(j) {
-        c(lng[c(i, i+1)], lat[c(j, j+1)])
-      }))
+  lng <- if (nRecLon > 1) adjustlong(map, nRecLon) else getBox(map)[1:2]
+  lat <- if (nRecVert > 1) adjustlat(map,  nRecVert) else getBox(map)[3:4]
+  rectangles <- do.call(rbind, lapply(1:nRecLon, function(i) {
+    do.call(rbind, lapply(1:nRecVert, function(j) {
+      c(lng[c(i, i+1)], lat[c(j, j+1)])
     }))
-    rectangles
-  }
-  
-  if(nRecLon ==1 & nRecVert >1){
-    lng <- getBox(map)[1:2]
-    lat <- adjustlat(map = map,  nRecVert = nRecVert)
-    
-    rectangles <- do.call(rbind,lapply(1:(nRecLon), function(i){
-      do.call(rbind, lapply(1:nRecVert, function(j) {
-        c(lng[c(i, i+1)], lat[c(j, j+1)])
-      }))
-    }))
-    rectangles
-  }
-  if(nRecLon > 1 & nRecVert == 1) {
-    lng <- adjustlong(map = map,  nRecLon = nRecLon) 
-    lat <- getBox(map)[3:4]
-    
-    rectangles <- do.call(rbind,lapply(1:(nRecLon), function(i){
-      do.call(rbind, lapply(1:nRecVert, function(j) {
-        c(lng[c(i, i+1)], lat[c(j, j+1)])
-      }))
-    }))
-    rectangles
-  }
-  
-  return(rectangles)
+  }))
+  rectangles
+}
+
+meter2screenpixel <- function(meter, orient = "v", zoomlevel, latitude) {
+  metresPerPixel.h <- 40075016.686 * abs(cos(latitude * pi / 180)) / 2^(zoomlevel + 8)
+  metresPerPixel.v <- 40075016.686 / 2^(zoomlevel + 8)
+  pixSizeGeodesic  <- ifelse(orient == "v", metresPerPixel.v, metresPerPixel.h)
+  meter / pixSizeGeodesic
+}
+
+calcZoom <- function(scale_meters_per_inch, lat, dpi = 300) {
+  phi        <- lat * pi / 180
+  needed_res <- scale_meters_per_inch * 0.0254 / dpi
+  z          <- log2(156543.0339 * cos(phi) / needed_res)
+  max(min(z, 22), 0)
+}
+
+bbox_to_sf_order <- function(bb) {
+  c(xmin = bb[1], ymin = bb[2], xmax = bb[3], ymax = bb[4])
 }
 
 
+# -----------------------------------------------------------
+# OSM layer definitions
+# Each entry: label, default (on/off), source OSM layer,
+# filter function, geometry type, and default colors.
+# -----------------------------------------------------------
 
-osmdata_plot <- function(bbox_df,
-                         folder = "www",
-                         prefix = "test",
-                         width = 4,
-                         height = 4) {
-  pdf(
-    file = paste0(folder, "/", prefix , ".pdf"),
-    width = width,
-    height = height,
-    onefile = TRUE
+LAYER_DEFS <- list(
+  roads = list(
+    label   = "Roads",
+    default = TRUE,
+    source  = "lines",
+    filter  = function(x) !is.na(x$highway),
+    type    = "line",
+    color   = "#555555",
+    lwd     = 0.35,
+    alpha   = 0.85
+  ),
+  waterways = list(
+    label   = "Waterways",
+    default = FALSE,
+    source  = "lines",
+    filter  = function(x) !is.na(x$waterway),
+    type    = "line",
+    color   = "#3a87c8",
+    lwd     = 0.4,
+    alpha   = 0.9
+  ),
+  buildings = list(
+    label   = "Buildings",
+    default = TRUE,
+    source  = "multipolygons",
+    filter  = function(x) !is.na(x$building),
+    type    = "polygon",
+    fill    = "#f2f2f2",
+    border  = "#aaaaaa",
+    lwd     = 0.15,
+    alpha   = 0.9
+  ),
+  parks = list(
+    label   = "Parks & green spaces",
+    default = FALSE,
+    source  = "multipolygons",
+    filter  = function(x) {
+      ((!is.na(x$leisure) & x$leisure %in% c("park","garden","nature_reserve","playground")) |
+       (!is.na(x$landuse) & x$landuse %in% c("grass","forest","meadow","recreation_ground","allotments")))
+    },
+    type    = "polygon",
+    fill    = "#c8e6c0",
+    border  = "#4CAF50",
+    lwd     = 0.2,
+    alpha   = 0.7
+  ),
+  water = list(
+    label   = "Water bodies",
+    default = FALSE,
+    source  = "multipolygons",
+    filter  = function(x) {
+      ((!is.na(x$natural) & x$natural == "water") | !is.na(x$water) |
+       (!is.na(x$landuse) & x$landuse == "reservoir"))
+    },
+    type    = "polygon",
+    fill    = "#b3d9f7",
+    border  = "#2196F3",
+    lwd     = 0.3,
+    alpha   = 0.85
+  ),
+  amenities = list(
+    label   = "Amenities (points)",
+    default = FALSE,
+    source  = "points",
+    filter  = function(x) !is.na(x$amenity),
+    type    = "point",
+    color   = "#e74c3c",
+    alpha   = 0.9
+  ),
+  schools = list(
+    label   = "Schools & education",
+    default = FALSE,
+    source  = "points",
+    filter  = function(x) {
+      !is.na(x$amenity) & x$amenity %in% c("school","university","college","kindergarten","library")
+    },
+    type    = "point",
+    color   = "#9b59b6",
+    alpha   = 0.9
+  ),
+  health = list(
+    label   = "Healthcare",
+    default = FALSE,
+    source  = "points",
+    filter  = function(x) {
+      !is.na(x$amenity) & x$amenity %in% c("hospital","clinic","pharmacy","doctors","dentist","health_centre")
+    },
+    type    = "point",
+    color   = "#e74c3c",
+    alpha   = 0.9
+  ),
+  transit = list(
+    label   = "Transit stops",
+    default = FALSE,
+    source  = "points",
+    filter  = function(x) {
+      (!is.na(x$highway) & x$highway == "bus_stop") | !is.na(x$public_transport) |
+      (!is.na(x$railway) & x$railway %in% c("station","stop","halt"))
+    },
+    type    = "point",
+    color   = "#FF9800",
+    alpha   = 0.9
   )
-  for (i in 1:nrow(bbox_df)) {
-    q1 <- opq(bbox = bbox_df[i,]) %>%
-      add_osm_feature(key = 'highway', value = 'cycleway')
-    cway_sev <- osmdata_sp(q1)
-    sp::plot(cway_sev$osm_lines)
-  }
-  dev.off()
-}
+)
 
 
-# Session-scoped cache directory for osmextract downloads. Everything
-# under tempdir() is cleared automatically when the R process ends, so
-# a region is only ever re-downloaded in a fresh session.
+# -----------------------------------------------------------
+# OSM data fetching (single-fetch architecture)
+# -----------------------------------------------------------
+
 osmextract_cache_dir <- function() {
   cache_dir <- file.path(tempdir(), "barrio_osmextract_cache")
   if (!dir.exists(cache_dir)) dir.create(cache_dir, recursive = TRUE)
   cache_dir
 }
 
-# Both overview_bbox and each panel's bb in server.R are already ordered
-# as (xmin, ymin, xmax, ymax), which is what sf::st_bbox expects.
-bbox_to_sf_order <- function(bb) {
-  c(xmin = bb[1], ymin = bb[2], xmax = bb[3], ymax = bb[4])
-}
-
-# Fetch roads and buildings for a bbox using osmextract instead of live
-# Overpass queries. The first request for a region downloads and caches
-# the matching Geofabrik extract for the rest of the session; every
-# later call, for any bbox inside that same region, reads from the
-# cached file and clips to the requested bbox.
+# Fetch all requested features from the smallest number of .pbf reads.
+# features is a character vector of LAYER_DEFS names.
 getOsmFeatures <- function(bb, features) {
-  bbox_sf <- sf::st_as_sfc(sf::st_bbox(bbox_to_sf_order(bb), crs = 4326))
+  if (length(features) == 0) return(list())
+
+  bbox_sf   <- sf::st_as_sfc(sf::st_bbox(bbox_to_sf_order(bb), crs = 4326))
   cache_dir <- osmextract_cache_dir()
 
-  roads <- NULL
-  buildings <- NULL
+  # Which OSM layers need to be fetched?
+  needed_sources <- unique(vapply(features, function(f) {
+    def <- LAYER_DEFS[[f]]
+    if (is.null(def)) NA_character_ else def$source
+  }, character(1)))
+  needed_sources <- needed_sources[!is.na(needed_sources)]
+  needed_sources <- intersect(needed_sources, c("lines", "multipolygons", "points"))
 
-  if ("roads" %in% features) {
-    roads <- osmextract::oe_get(
-      place               = bbox_sf,
-      layer               = "lines",
-      download_directory  = cache_dir,
-      boundary            = bbox_sf,
-      boundary_type       = "clipsrc",
-      quiet               = TRUE
+  # Fetch each source once
+  raw <- list()
+  for (src in needed_sources) {
+    raw[[src]] <- tryCatch(
+      osmextract::oe_get(
+        place              = bbox_sf,
+        layer              = src,
+        download_directory = cache_dir,
+        boundary           = bbox_sf,
+        boundary_type      = "clipsrc",
+        quiet              = TRUE
+      ),
+      error = function(e) NULL
     )
-    roads <- roads[!is.na(roads$highway), ]
   }
 
-  if ("buildings" %in% features) {
-    buildings <- osmextract::oe_get(
-      place               = bbox_sf,
-      layer               = "multipolygons",
-      download_directory  = cache_dir,
-      boundary            = bbox_sf,
-      boundary_type       = "clipsrc",
-      quiet               = TRUE
-    )
-    buildings <- buildings[!is.na(buildings$building), ]
+  # Extract each requested feature using its filter function
+  result <- list()
+  for (f in features) {
+    def <- LAYER_DEFS[[f]]
+    if (is.null(def)) next
+    src  <- def$source
+    data <- raw[[src]]
+    if (is.null(data) || nrow(data) == 0) next
+    filt <- tryCatch(def$filter(data), error = function(e) rep(FALSE, nrow(data)))
+    filt[is.na(filt)] <- FALSE
+    if (any(filt)) result[[f]] <- data[filt, ]
   }
-
-  list(roads = roads, buildings = buildings)
+  result
 }
 
-# Pre-download and cache the Geofabrik extracts for a fixed set of
-# places before any user connects. Called once from app.R at startup.
-# Every export that falls inside one of these regions then reads from
-# the cache instead of paying the country/state download on first use.
-# Each place name is resolved by osmextract's own place matching
-# (see oe_match()), so "Arizona" or "Tucson" both work; pick whatever
-# level covers the areas your users actually map.
 preloadOsmRegions <- function(places) {
   cache_dir <- osmextract_cache_dir()
-
   for (place in places) {
     tryCatch({
       message("Pre-loading OSM extract for: ", place)
-      osmextract::oe_get(
-        place               = place,
-        download_directory  = cache_dir,
-        download_only       = TRUE,
-        quiet               = TRUE
-      )
-    }, error = function(e) {
-      warning("Could not pre-load OSM extract for ", place, ": ", conditionMessage(e))
-    })
+      osmextract::oe_get(place = place, download_directory = cache_dir,
+                         download_only = TRUE, quiet = TRUE)
+    }, error = function(e) warning("Could not pre-load ", place, ": ", conditionMessage(e)))
   }
 }
 
-
-
-#Calculate the number of screen pixels that correspond to a given distance in meters
-meter2screenpixel <- function(meter, orient = "v", zoomlevel, latitude) {
-  # Meters per pixel at this zoom and latitude (OSM Web Mercator convention).
-  # Horizontal resolution shrinks with cos(latitude); vertical does not.
-  # https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Resolution_and_Scale
-  metresPerPixel.h <- 40075016.686 * abs(cos(latitude * pi / 180)) / 2^(zoomlevel + 8)
-  metresPerPixel.v <- 40075016.686 / 2^(zoomlevel + 8)
-
-  pixSizeGeodesic <- ifelse(orient == "v", metresPerPixel.v, metresPerPixel.h)
-  pixel <- meter / pixSizeGeodesic
-  return(pixel)
+# Helper to get user-set color with validation and fallback
+getColor <- function(input_val, default_val) {
+  v <- trimws(input_val %||% "")
+  if (grepl("^#[0-9A-Fa-f]{6}$", v)) v else default_val
 }
 
 
-# helper function that converts "1 inch : scale_meters_per_inch" 
-# into a valid Leaflet zoom level, accounting for latitude and DPI.
-calcZoom <- function(scale_meters_per_inch, lat, dpi = 300) {
-  # Convert latitude to radians
-  phi <- lat * pi / 180
-  
-  # Web Mercator base resolution at zoom=0 (equator)
-  baseRes <- 156543.0339
-  
-  # If 1 inch = scale_meters_per_inch in reality, 
-  # and 1 inch = dpi pixels on the PDF,
-  # then we want scale_meters_per_inch / dpi meters/pixel.
-  needed_res <- scale_meters_per_inch * 0.0254 / dpi
-  
-  # Web Mercator approximate formula:
-  # resolution(z, phi) = (baseRes * cos(phi)) / 2^z
-  # needed_res         = (baseRes * cos(phi)) / 2^z
-  # => 2^z = (baseRes * cos(phi)) / needed_res
-  # => z   = log2((baseRes * cos(phi)) / needed_res)
-  z <- log2((baseRes * cos(phi)) / needed_res)
-  
-  # Constrain zoom to typical Leaflet range
-  z <- max(min(z, 22), 0)
-  
-  return(z)
-}
+# -----------------------------------------------------------
+# Map code system
+# -----------------------------------------------------------
 
-# Named color palettes for layer selection. These are available in both
-# server.R (for the PDF) and ui.R (for the selectInput choices), since
-# app.R sources functions.R before sourcing either of them.
-ROAD_COLORS <- c(
-  "Dark gray"    = "#555555",
-  "Black"        = "#000000",
-  "Navy"         = "#1d3557",
-  "Warm brown"   = "#774936",
-  "Forest green" = "#2d6a4f"
-)
-
-BLD_FILL_COLORS <- c(
-  "Light gray"   = "#f2f2f2",
-  "White"        = "#ffffff",
-  "Warm white"   = "#faf8f5",
-  "Soft blue"    = "#e8f4f8",
-  "Soft green"   = "#e8f5e9",
-  "Sand"         = "#fdf3dc"
-)
-
-BLD_BORDER_COLORS <- c(
-  "Medium gray"  = "#aaaaaa",
-  "Dark gray"    = "#666666",
-  "Black"        = "#000000",
-  "Brown"        = "#774936",
-  "Slate"        = "#4a5568"
-)
-
-# Generate a random 6-character alphanumeric map code.
 generateMapCode <- function() {
-  chars <- c(LETTERS, as.character(0:9))
-  paste0(sample(chars, 6, replace = TRUE), collapse = "")
+  paste0(sample(c(LETTERS, as.character(0:9)), 6, replace = TRUE), collapse = "")
 }
 
-# Save map parameters to map_codes/{code}.json. Creates the directory
-# if it does not exist. The saved_at timestamp drives expiry.
+codesDir <- function() {
+  d <- file.path(getwd(), "map_codes")
+  if (!dir.exists(d)) dir.create(d, recursive = TRUE)
+  d
+}
+
 saveMapCode <- function(code, params) {
-  dir <- file.path(getwd(), "map_codes")
-  if (!dir.exists(dir)) dir.create(dir, recursive = TRUE)
   params$saved_at <- as.numeric(Sys.time())
-  writeLines(
-    jsonlite::toJSON(params, auto_unbox = TRUE),
-    file.path(dir, paste0(code, ".json"))
+  tryCatch(
+    writeLines(jsonlite::toJSON(params, auto_unbox = TRUE),
+               file.path(codesDir(), paste0(code, ".json"))),
+    error = function(e) NULL
   )
 }
 
-# Retrieve map parameters by code. Returns NULL if not found or expired.
 loadMapCode <- function(code, max_days = 30) {
   code <- toupper(trimws(code))
-  f <- file.path(getwd(), "map_codes", paste0(code, ".json"))
+  f    <- file.path(codesDir(), paste0(code, ".json"))
   if (!file.exists(f)) return(NULL)
   params <- tryCatch(jsonlite::fromJSON(f), error = function(e) NULL)
   if (is.null(params)) return(NULL)
-  age_days <- (as.numeric(Sys.time()) - params$saved_at) / 86400
-  if (age_days > max_days) {
-    file.remove(f)
-    return(NULL)
+  if ((as.numeric(Sys.time()) - params$saved_at) / 86400 > max_days) {
+    file.remove(f); return(NULL)
   }
   params
 }
 
-# Delete code files older than max_days. Called once at app startup.
 cleanExpiredCodes <- function(max_days = 30) {
-  dir <- file.path(getwd(), "map_codes")
-  if (!dir.exists(dir)) return(invisible(NULL))
-  files <- list.files(dir, pattern = "\\.json$", full.names = TRUE)
-  for (f in files) {
+  d <- file.path(getwd(), "map_codes")
+  if (!dir.exists(d)) return(invisible(NULL))
+  for (f in list.files(d, pattern = "\\.json$", full.names = TRUE)) {
     tryCatch({
-      params <- jsonlite::fromJSON(f)
-      if ((as.numeric(Sys.time()) - params$saved_at) / 86400 > max_days)
+      p <- jsonlite::fromJSON(f)
+      if (!is.null(p$saved_at) && (as.numeric(Sys.time()) - p$saved_at) / 86400 > max_days)
         file.remove(f)
-    }, error = function(e) file.remove(f))
+    }, error = function(e) if (f != file.path(d, "gallery.json") && f != file.path(d, "stats.json")) file.remove(f))
   }
   invisible(NULL)
+}
+
+
+# -----------------------------------------------------------
+# Community gallery and map counter
+# -----------------------------------------------------------
+
+incrementMapCount <- function() {
+  f <- file.path(codesDir(), "stats.json")
+  s <- tryCatch(if (file.exists(f)) jsonlite::fromJSON(f) else list(total_maps = 0L),
+                error = function(e) list(total_maps = 0L))
+  s$total_maps <- (s$total_maps %||% 0L) + 1L
+  tryCatch(writeLines(jsonlite::toJSON(s, auto_unbox = TRUE), f), error = function(e) NULL)
+  s$total_maps
+}
+
+getMapCount <- function() {
+  f <- file.path(codesDir(), "stats.json")
+  tryCatch(
+    if (file.exists(f)) jsonlite::fromJSON(f)$total_maps else 0L,
+    error = function(e) 0L
+  )
+}
+
+addToGallery <- function(code, lat, lon, scale, date_str) {
+  f <- file.path(codesDir(), "gallery.json")
+  gallery <- tryCatch(
+    if (file.exists(f)) jsonlite::fromJSON(f, simplifyVector = FALSE) else list(),
+    error = function(e) list()
+  )
+  entry <- list(code = code, lat = round(lat, 4), lon = round(lon, 4),
+                scale = as.numeric(scale), date = date_str)
+  gallery <- c(list(entry), gallery)
+  if (length(gallery) > 12) gallery <- gallery[1:12]
+  tryCatch(writeLines(jsonlite::toJSON(gallery, auto_unbox = TRUE), f), error = function(e) NULL)
+}
+
+getGallery <- function() {
+  f <- file.path(codesDir(), "gallery.json")
+  tryCatch(
+    if (file.exists(f)) jsonlite::fromJSON(f, simplifyVector = FALSE) else list(),
+    error = function(e) list()
+  )
+}
+
+
+# -----------------------------------------------------------
+# User data helpers
+# -----------------------------------------------------------
+
+# Build popup HTML for editable labels (works inside Leaflet via Shiny.setInputValue)
+makeEditPopup <- function(source, feature_id, current_label) {
+  lbl <- if (is.na(current_label) || is.null(current_label)) "" else as.character(current_label)
+  paste0(
+    '<div style="min-width:190px;">',
+    '<p style="font-size:11px;color:#888;margin-bottom:4px;">Label this feature:</p>',
+    '<input type="text" id="elbl_', feature_id, '" value="', htmltools::htmlEscape(lbl), '" ',
+    'style="width:100%;padding:5px;border:1px solid #ccc;border-radius:4px;font-size:13px;">',
+    '<button onclick="Shiny.setInputValue(',
+    "'save_label',",
+    "{src:'", source, "',id:", feature_id, ",",
+    "lbl:document.getElementById('elbl_", feature_id, "').value},",
+    "{priority:'event'})" ,
+    ' style="margin-top:6px;background:#1a5c3a;color:white;border:none;',
+    'border-radius:4px;padding:5px 12px;cursor:pointer;font-size:12px;width:100%;">',
+    'Save label</button></div>'
+  )
+}
+
+# Convert drawn GeoJSON geometry to sf
+drawnGeomToSf <- function(geom_type, coords) {
+  tryCatch({
+    if (geom_type == "Point") {
+      sf::st_sfc(sf::st_point(c(coords[[1]], coords[[2]])), crs = 4326)
+    } else if (geom_type %in% c("Polygon", "Rectangle")) {
+      ring <- do.call(rbind, lapply(coords[[1]], function(c) c(c[[1]], c[[2]])))
+      if (!identical(ring[1,], ring[nrow(ring),])) ring <- rbind(ring, ring[1,])
+      sf::st_sfc(sf::st_polygon(list(ring)), crs = 4326)
+    } else {
+      NULL
+    }
+  }, error = function(e) NULL)
+}
+
+# Safely write sf object to GeoJSON (omits problematic list columns)
+write_safe_geojson <- function(sf_obj, path) {
+  cols_to_keep <- names(sf_obj)[vapply(names(sf_obj), function(nm) {
+    !is.list(sf_obj[[nm]])
+  }, logical(1))]
+  sf::st_write(sf_obj[, cols_to_keep], path,
+               driver = "GeoJSON", quiet = TRUE, delete_dsn = TRUE)
 }
