@@ -1047,7 +1047,14 @@ server <- function(input, output, session) {
 
       # SHOW CODE MODAL
       showModal(modalDialog(
-        title = NULL, footer = modalButton("Got it!"), easyClose = TRUE,
+        title = NULL,
+        footer = tagList(
+          downloadButton("download_pdf_modal", "Download",
+                         icon  = NULL,
+                         style = "background:#1a5c3a;color:white;border-color:#1a5c3a;font-weight:600;"),
+          modalButton("Got it!")
+        ),
+        easyClose = TRUE,
         tags$div(style = "text-align:center;padding:10px 20px 20px;",
           tags$div(style = "font-size:12px;color:#888;margin-bottom:8px;",
                    "Your map is ready - save this code"),
@@ -1057,9 +1064,7 @@ server <- function(input, output, session) {
                                   "display:inline-block;"),
                    map_code),
           tags$p(style = "color:#555;font-size:13px;margin-top:10px;",
-                 paste0("Enter at ", APP_URL, " to restore this map for 30 days.")),
-          tags$p(style = "color:#888;font-size:11px;",
-                 "Click the Download button in the sidebar to save your file.")
+                 paste0("Enter at ", APP_URL, " to restore this map for 30 days."))
         )
       ))
     }
@@ -1067,6 +1072,19 @@ server <- function(input, output, session) {
 
   # STEP 2: Download - instant file copy, no timeout risk.
   output$download_pdf <- downloadHandler(
+    filename = function() {
+      nm   <- trimws(input$map_name %||% "")
+      base <- if (nchar(nm) > 0) gsub("[^a-zA-Z0-9_-]", "_", nm) else "BarrioMap"
+      paste0(base, "_", format(Sys.Date(), "%Y%m%d"), isolate(rv$export_ext) %||% ".pdf")
+    },
+    content = function(file) {
+      req(!is.null(rv$export_path), file.exists(rv$export_path))
+      file.copy(rv$export_path, file, overwrite = TRUE)
+    }
+  )
+
+  # Same handler wired to the button inside the modal.
+  output$download_pdf_modal <- downloadHandler(
     filename = function() {
       nm   <- trimws(input$map_name %||% "")
       base <- if (nchar(nm) > 0) gsub("[^a-zA-Z0-9_-]", "_", nm) else "BarrioMap"

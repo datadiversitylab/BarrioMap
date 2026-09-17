@@ -130,7 +130,7 @@ LAYER_DEFS <- list(
     source  = "multipolygons",
     filter  = function(x) {
       ((!is.na(x$leisure) & x$leisure %in% c("park","garden","nature_reserve","playground")) |
-         (!is.na(x$landuse) & x$landuse %in% c("grass","forest","meadow","recreation_ground","allotments")))
+       (!is.na(x$landuse) & x$landuse %in% c("grass","forest","meadow","recreation_ground","allotments")))
     },
     type    = "polygon",
     fill    = "#c8e6c0",
@@ -144,7 +144,7 @@ LAYER_DEFS <- list(
     source  = "multipolygons",
     filter  = function(x) {
       ((!is.na(x$natural) & x$natural == "water") | !is.na(x$water) |
-         (!is.na(x$landuse) & x$landuse == "reservoir"))
+       (!is.na(x$landuse) & x$landuse == "reservoir"))
     },
     type    = "polygon",
     fill    = "#b3d9f7",
@@ -189,7 +189,7 @@ LAYER_DEFS <- list(
     source  = "points",
     filter  = function(x) {
       (!is.na(x$highway) & x$highway == "bus_stop") | !is.na(x$public_transport) |
-        (!is.na(x$railway) & x$railway %in% c("station","stop","halt"))
+      (!is.na(x$railway) & x$railway %in% c("station","stop","halt"))
     },
     type    = "point",
     color   = "#FF9800",
@@ -282,11 +282,12 @@ generateMapCode <- function() {
 }
 
 codesDir <- function() {
-  # getwd() points to the deployment bundle and resets on every push.
-  # path.expand("~") is the service account's home directory on the
-  # server and persists across redeployments, so the counter, map
-  # codes, and gallery are never wiped when the app is updated.
-  d <- file.path(path.expand("~"), ".barriomap_data")
+  # Reads BARRIOMAP_DATA_DIR first so the path can be set once in
+  # Connect's App Settings > Environment and never needs to change
+  # across redeployments. Falls back to the service account's home
+  # directory, which also persists unlike getwd() (the bundle dir).
+  d <- Sys.getenv("BARRIOMAP_DATA_DIR",
+                  unset = file.path(path.expand("~"), ".barriomap_data"))
   if (!dir.exists(d)) dir.create(d, recursive = TRUE)
   d
 }
@@ -313,7 +314,7 @@ loadMapCode <- function(code, max_days = 30) {
 }
 
 cleanExpiredCodes <- function(max_days = 30) {
-  d <- file.path(getwd(), "map_codes")
+  d <- codesDir()
   if (!dir.exists(d)) return(invisible(NULL))
   for (f in list.files(d, pattern = "\\.json$", full.names = TRUE)) {
     tryCatch({

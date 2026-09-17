@@ -275,7 +275,7 @@ ui <- navbarPage(
                 numericInput("pageW", "Width (m)",  0.18),
                 selectInput("scale", "Scale",
                             choices = c(
-                              "1:31680 - 1/2 mile"   = 31680,
+                              "1:31,680 - ~1/2 mile"   = 31680,
                               "1:600 - Site plan"  = 600,
                               "1:384 - Design detail"             = 384
                             )),
@@ -478,9 +478,6 @@ ui <- navbarPage(
       ),
 
       tags$h5(style="color:#1a5c3a;margin-top:28px;", "The team"),
-      tags$p(style="font-size:12px;color:#bbb;margin-bottom:16px;",
-             "To add photos, place portrait images in www/ and replace the initials divs with",
-             " img tags (width:60px, height:60px, border-radius:50%) in ui.R."),
 
       tags$div(class="bm-team-card",
                tags$img(
