@@ -248,6 +248,13 @@ server <- function(input, output, session) {
       # Guard against exporting before the map has produced any rectangles
       req(rv$rects)
       rects <- rv$rects
+
+      # One step each for: instructions, overview data, overview page, merge,
+      # plus two per panel (data + drawing).
+      total_steps <- 4 + 2 * nrow(rects)
+      progress <- shiny::Progress$new(max = total_steps)
+      progress$set(message = "Generating your map", value = 0)
+      on.exit(progress$close(), add = TRUE)
       
       # Write all intermediate files to a private temp directory, avoiding
       # collisions between concurrent users and read-only app directories
@@ -262,6 +269,7 @@ server <- function(input, output, session) {
       #
       # CREATE INSTRUCTIONS PAGE (PAGE 1)
       #
+      progress$inc(amount = 1, detail = "Building the instructions page")
       instr_lines <- c("Barrio PDF Instructions:")
       # row-major logic: row = floor((i-1)/rv$hpages) + 1
       #                  col = ((i-1) %% rv$hpages) + 1
@@ -311,6 +319,7 @@ server <- function(input, output, session) {
       #
       # CREATE OVERVIEW PAGE (PAGE 2)
       #
+      progress$inc(amount = 1, detail = "Fetching map data for this area (this takes longer the first time you visit a new region)")
       all_lng <- c(rects[,1], rects[,2])
       all_lat <- c(rects[,3], rects[,4])
       min_lng <- min(all_lng)
@@ -331,6 +340,8 @@ server <- function(input, output, session) {
       )
       roads_ov     <- overview_features$roads
       buildings_ov <- overview_features$buildings
+
+      progress$inc(amount = 1, detail = "Drawing the overview page")
       
       all_panels_sf <- lapply(seq_len(nrow(rects)), function(i) {
         bb <- rects[i, ]
@@ -415,7 +426,9 @@ server <- function(input, output, session) {
         
         row_i <- floor((i - 1) / rv$hpages) + 1
         col_i <- ((i - 1) %% rv$hpages) + 1
-        
+
+        progress$inc(amount = 1, detail = paste0("Fetching data for panel ", i, " of ", nrow(rects)))
+
         panel_features <- tryCatch(
           getOsmFeatures(bb, input$features),
           error = function(e) {
@@ -427,6 +440,8 @@ server <- function(input, output, session) {
         )
         roads_sf     <- panel_features$roads
         buildings_sf <- panel_features$buildings
+
+        progress$inc(amount = 1, detail = paste0("Drawing panel ", i, " of ", nrow(rects)))
         
         panel_polygon <- st_as_sf(st_sfc(st_polygon(list(matrix(c(
           bb[1], bb[2],
@@ -478,6 +493,7 @@ server <- function(input, output, session) {
       #
       # MERGE: instructions.pdf (page1) + overview.pdf (page2) + panels (page3+)
       #
+      progress$inc(amount = 1, detail = "Putting the PDF together")
       tmp_files <- c(file.path(export_dir, "instructions.pdf"),
                      file.path(export_dir, "overview.pdf"),
                      panel_files)
