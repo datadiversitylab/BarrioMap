@@ -37,7 +37,7 @@ server <- function(input, output, session) {
     pageW            = 0.18,
     vpages           = 1,
     hpages           = 1,
-    scale            = 5840,
+    scale            = 31680,
     page             = "a4",
     dpi              = 300,
     rects            = NULL,
@@ -49,7 +49,9 @@ server <- function(input, output, session) {
     user_points      = NULL,
     user_polygons    = NULL,
     user_raster      = NULL,
-    drawn_id_counter = 0L
+    drawn_id_counter = 0L,
+    export_path      = NULL,
+    export_ext       = ".pdf"
   )
 
   observe({
@@ -76,7 +78,7 @@ server <- function(input, output, session) {
       addProviderTiles("CartoDB.Positron",   group = "Light") %>%
       addProviderTiles("CartoDB.DarkMatter", group = "Dark") %>%
       addScaleBar(position = "bottomleft") %>%
-      setView(lng = -110.9742, lat = 32.2540, zoom = 14) %>%
+      setView(lng = -110.9742, lat = 32.2540, zoom = 12) %>%
       addLayersControl(
         baseGroups    = c("OSM (default)", "Light", "Dark"),
         overlayGroups = c("drawn", "user_points", "user_polygons", "raster"),
@@ -574,20 +576,27 @@ server <- function(input, output, session) {
   })
 
   # -----------------------------------------------------------
-  # PDF + data bundle export
+  # PDF + data bundle export (two-step: generate then download)
+  #
+  # Step 1 runs inside observeEvent — over WebSocket, no HTTP
+  # timeout. Step 2 is a downloadHandler that copies the
+  # pre-built file in milliseconds, well within any timeout.
   # -----------------------------------------------------------
 
-  output$print <- downloadHandler(
-    filename = function() {
-      nm       <- trimws(input$map_name %||% "")
-      base     <- if (nchar(nm) > 0) gsub("[^a-zA-Z0-9_-]", "_", nm) else "BarrioMap"
-      has_data <- !is.null(rv$drawn_features) ||
-                  !is.null(rv$user_points)    ||
-                  !is.null(rv$user_polygons)
-      ext  <- if (has_data) ".zip" else ".pdf"
-      paste0(base, "_", format(Sys.Date(), "%Y%m%d"), ext)
-    },
-    content = function(file) {
+  # Exposes rv$export_path to conditionalPanel in ui.R.
+  output$pdf_ready <- reactive({
+    !is.null(rv$export_path) && file.exists(rv$export_path)
+  })
+  outputOptions(output, "pdf_ready", suspendWhenHidden = FALSE)
+
+  # Clean up the export file when the session ends.
+  session$onSessionEnded(function() {
+    p <- isolate(rv$export_path)
+    if (!is.null(p) && file.exists(p)) file.remove(p)
+  })
+
+  # STEP 1: Generate - all slow work happens here, over WebSocket.
+  observeEvent(input$generate_btn, {
 
       req(rv$rects)
       rects     <- rv$rects
@@ -973,15 +982,17 @@ server <- function(input, output, session) {
         addToGallery(map_code, rv$latitude, rv$longitude, rv$scale,
                      format(Sys.Date(), "%Y-%m-%d"))
 
-      # DELIVER: PDF alone if no user data, ZIP bundle if user data exists
+      # Save to a permanent path (outside export_dir cleanup scope).
       progress$inc(amount = 1, detail = "Preparing your download")
 
       has_data <- (!is.null(rv$drawn_features) && nrow(rv$drawn_features) > 0) ||
                   !is.null(rv$user_points) ||
                   !is.null(rv$user_polygons)
+      out_ext  <- if (has_data) ".zip" else ".pdf"
+      out_path <- tempfile("barrio_ready_", fileext = out_ext)
 
       if (!has_data) {
-        file.copy(merged, file, overwrite = TRUE)
+        file.copy(merged, out_path, overwrite = TRUE)
 
       } else {
         bundle_dir <- tempfile("bm_bundle_")
@@ -1023,10 +1034,16 @@ server <- function(input, output, session) {
           "Data from OpenStreetMap (c) contributors, ODbL license."
         ), file.path(bundle_dir, "README.txt"))
 
-        utils::zip(zipfile = file,
+        utils::zip(zipfile = out_path,
                    files   = list.files(bundle_dir, full.names = TRUE),
                    flags   = "-j")
       }
+
+      # Store the ready file; clean up any previous export.
+      old_path <- isolate(rv$export_path)
+      if (!is.null(old_path) && file.exists(old_path)) file.remove(old_path)
+      rv$export_path <- out_path
+      rv$export_ext  <- out_ext
 
       # SHOW CODE MODAL
       showModal(modalDialog(
@@ -1042,9 +1059,22 @@ server <- function(input, output, session) {
           tags$p(style = "color:#555;font-size:13px;margin-top:10px;",
                  paste0("Enter at ", APP_URL, " to restore this map for 30 days.")),
           tags$p(style = "color:#888;font-size:11px;",
-                 "Your download is a ZIP file containing the PDF and any data you created.")
+                 "Click the Download button in the sidebar to save your file.")
         )
       ))
+    }
+  )
+
+  # STEP 2: Download - instant file copy, no timeout risk.
+  output$download_pdf <- downloadHandler(
+    filename = function() {
+      nm   <- trimws(input$map_name %||% "")
+      base <- if (nchar(nm) > 0) gsub("[^a-zA-Z0-9_-]", "_", nm) else "BarrioMap"
+      paste0(base, "_", format(Sys.Date(), "%Y%m%d"), isolate(rv$export_ext) %||% ".pdf")
+    },
+    content = function(file) {
+      req(!is.null(rv$export_path), file.exists(rv$export_path))
+      file.copy(rv$export_path, file, overwrite = TRUE)
     }
   )
 }

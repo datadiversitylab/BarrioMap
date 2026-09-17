@@ -275,8 +275,8 @@ ui <- navbarPage(
                 numericInput("pageW", "Width (m)",  0.18),
                 selectInput("scale", "Scale",
                             choices = c(
-                              "1:5,840 - Neighborhood overview"   = 5840,
-                              "1:600 - Site plan (1 in = 50 ft)"  = 600,
+                              "1:31680 - 1/2 mile"   = 31680,
+                              "1:600 - Site plan"  = 600,
                               "1:384 - Design detail"             = 384
                             )),
                 fluidRow(
@@ -385,10 +385,21 @@ ui <- navbarPage(
 
           # DOWNLOAD + SHARE
           tags$div(style="padding:12px 14px 6px;",
-            downloadButton("print", "Download map",
-                           icon = NULL,
-                           class = "btn btn-success btn-block"),
-            tags$p(class="bm-hint", style="margin:4px 0 8px;",
+            actionButton("generate_btn", "Generate map",
+                         icon  = icon("cog"),
+                         class = "btn btn-success btn-block",
+                         width = "100%"),
+            conditionalPanel(
+              condition = "output.pdf_ready",
+              tags$div(style = "margin-top:6px;",
+                downloadButton("download_pdf", "Download",
+                               icon  = NULL,
+                               class = "btn btn-outline-success btn-block"),
+                tags$p(class = "bm-hint", style = "margin:3px 0 0;",
+                       "Your map is ready. Click to save.")
+              )
+            ),
+            tags$p(class="bm-hint", style="margin:6px 0 8px;",
                    "Downloads as PDF. If you added your own data (drawn, uploaded points or polygons), you get a ZIP containing the PDF and all your data files."
             ),
             checkboxInput("share_to_gallery",
@@ -465,12 +476,12 @@ ui <- navbarPage(
                " Draw your own features, upload data, pick layers and colors,",
                " and download a vector PDF you can print, annotate, and take into the field.")
       ),
-      
+
       tags$h5(style="color:#1a5c3a;margin-top:28px;", "The team"),
       tags$p(style="font-size:12px;color:#bbb;margin-bottom:16px;",
              "To add photos, place portrait images in www/ and replace the initials divs with",
              " img tags (width:60px, height:60px, border-radius:50%) in ui.R."),
-      
+
       tags$div(class="bm-team-card",
                tags$img(
                  src   = "sarthak.jpg",
