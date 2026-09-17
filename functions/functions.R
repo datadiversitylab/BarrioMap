@@ -231,46 +231,19 @@ getOsmFeatures <- function(bb, features) {
 
 
 #Calculate the number of screen pixels that correspond to a given distance in meters
-meter2screenpixel <- function(meter, orient ="v",  zoomlevel, latitude) {
-  #Get the resolution of the map from the "this.map" object.
-  res <- 156543.03 * cos(latitude) / (2 ^ zoomlevel)
-  #https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Resolution_and_Scale
-  #metresPerPixel.v = 40075016.686 * abs(cos(latitude * pi/180)) / 2^(zoomlevel+8)
-  metresPerPixel.h = 40075016.686 * abs(cos(latitude * pi/180)) / 2^(zoomlevel+8)
-  #metresPerPixel.h = 40075016.686 / 2^(zoomlevel+8)
-  metresPerPixel.v = 40075016.686 / 2^(zoomlevel+8)
-  
-  ##this.map.getGeodesicPixelSize().w
-  ##this.map.getGeodesicPixelSize().h
-  pixSizeGeodesic <- ifelse(orient == "v", metresPerPixel.v, metresPerPixel.h) * 1
-  pixel <- meter * (res / pixSizeGeodesic)
+meter2screenpixel <- function(meter, orient = "v", zoomlevel, latitude) {
+  metresPerPixel.h <- 40075016.686 * abs(cos(latitude * pi / 180)) / 2^(zoomlevel + 8)
+  metresPerPixel.v <- 40075016.686 / 2^(zoomlevel + 8)
+  pixSizeGeodesic <- ifelse(orient == "v", metresPerPixel.v, metresPerPixel.h)
+  pixel <- meter / pixSizeGeodesic
   return(pixel)
 }
 
-
-# helper function that converts "1 inch : scale_meters_per_inch" 
-# into a valid Leaflet zoom level, accounting for latitude and DPI.
 calcZoom <- function(scale_meters_per_inch, lat, dpi = 300) {
-  # Convert latitude to radians
   phi <- lat * pi / 180
-  
-  # Web Mercator base resolution at zoom=0 (equator)
   baseRes <- 156543.0339
-  
-  # If 1 inch = scale_meters_per_inch in reality, 
-  # and 1 inch = dpi pixels on the PDF,
-  # then we want scale_meters_per_inch / dpi meters/pixel.
-  needed_res <- scale_meters_per_inch / dpi
-  
-  # Web Mercator approximate formula:
-  # resolution(z, phi) = (baseRes * cos(phi)) / 2^z
-  # needed_res         = (baseRes * cos(phi)) / 2^z
-  # => 2^z = (baseRes * cos(phi)) / needed_res
-  # => z   = log2((baseRes * cos(phi)) / needed_res)
+  needed_res <- scale_meters_per_inch * 0.0254 / dpi
   z <- log2((baseRes * cos(phi)) / needed_res)
-  
-  # Constrain zoom to typical Leaflet range
   z <- max(min(z, 22), 0)
-  
   return(z)
 }
