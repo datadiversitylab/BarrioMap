@@ -1,5 +1,5 @@
 # ============================================================
-# functions.R — Shared functions and constants for BarrioMap
+# functions.R - Shared functions and constants for BarrioMap
 # ============================================================
 
 `%||%` <- function(x, y) if (!is.null(x) && length(x) > 0 && !all(is.na(x)) && nzchar(x[1])) x else y
@@ -372,19 +372,22 @@ getGallery <- function() {
 # Build popup HTML for editable labels (works inside Leaflet via Shiny.setInputValue)
 makeEditPopup <- function(source, feature_id, current_label) {
   lbl <- if (is.na(current_label) || is.null(current_label)) "" else as.character(current_label)
+  fid <- as.integer(feature_id)
+  # Build the JS call with sprintf so the onclick attribute is cleanly closed.
+  js <- sprintf(
+    "Shiny.setInputValue('save_label',{src:'%s',id:%d,lbl:document.getElementById('elbl_%d').value},{priority:'event'})",
+    source, fid, fid
+  )
   paste0(
     '<div style="min-width:190px;">',
     '<p style="font-size:11px;color:#888;margin-bottom:4px;">Label this feature:</p>',
-    '<input type="text" id="elbl_', feature_id, '" value="', htmltools::htmlEscape(lbl), '" ',
+    '<input type="text" id="elbl_', fid, '" value="', htmltools::htmlEscape(lbl), '" ',
     'style="width:100%;padding:5px;border:1px solid #ccc;border-radius:4px;font-size:13px;">',
-    '<button onclick="Shiny.setInputValue(',
-    "'save_label',",
-    "{src:'", source, "',id:", feature_id, ",",
-    "lbl:document.getElementById('elbl_", feature_id, "').value},",
-    "{priority:'event'})" ,
-    ' style="margin-top:6px;background:#1a5c3a;color:white;border:none;',
+    '<button onclick="', js, '" ',
+    'style="margin-top:6px;background:#1a5c3a;color:white;border:none;',
     'border-radius:4px;padding:5px 12px;cursor:pointer;font-size:12px;width:100%;">',
-    'Save label</button></div>'
+    'Save label</button>',
+    '</div>'
   )
 }
 
