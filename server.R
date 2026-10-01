@@ -727,7 +727,7 @@ server <- function(input, output, session) {
                                     bar_cols = c("#333","#fff"), text_cex = 0.65)
         if (isTRUE(input$show_north))
           p <- p + annotation_north_arrow(
-            location = "tr", which_north = "true",
+            location = "tr", which_north = "grid",
             style    = north_arrow_nautical(fill = c("#333","#fff"),
                                             line_col = "#333", text_col = "#333"),
             height = unit(1.1,"cm"), width = unit(1.1,"cm")
