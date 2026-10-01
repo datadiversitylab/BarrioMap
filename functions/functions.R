@@ -130,7 +130,7 @@ LAYER_DEFS <- list(
     source  = "multipolygons",
     filter  = function(x) {
       ((!is.na(x$leisure) & x$leisure %in% c("park","garden","nature_reserve","playground")) |
-       (!is.na(x$landuse) & x$landuse %in% c("grass","forest","meadow","recreation_ground","allotments")))
+         (!is.na(x$landuse) & x$landuse %in% c("grass","forest","meadow","recreation_ground","allotments")))
     },
     type    = "polygon",
     fill    = "#c8e6c0",
@@ -144,7 +144,7 @@ LAYER_DEFS <- list(
     source  = "multipolygons",
     filter  = function(x) {
       ((!is.na(x$natural) & x$natural == "water") | !is.na(x$water) |
-       (!is.na(x$landuse) & x$landuse == "reservoir"))
+         (!is.na(x$landuse) & x$landuse == "reservoir"))
     },
     type    = "polygon",
     fill    = "#b3d9f7",
@@ -189,7 +189,7 @@ LAYER_DEFS <- list(
     source  = "points",
     filter  = function(x) {
       (!is.na(x$highway) & x$highway == "bus_stop") | !is.na(x$public_transport) |
-      (!is.na(x$railway) & x$railway %in% c("station","stop","halt"))
+        (!is.na(x$railway) & x$railway %in% c("station","stop","halt"))
     },
     type    = "point",
     color   = "#FF9800",
@@ -212,10 +212,10 @@ osmextract_cache_dir <- function() {
 # features is a character vector of LAYER_DEFS names.
 getOsmFeatures <- function(bb, features) {
   if (length(features) == 0) return(list())
-
+  
   bbox_sf   <- sf::st_as_sfc(sf::st_bbox(bbox_to_sf_order(bb), crs = 4326))
   cache_dir <- osmextract_cache_dir()
-
+  
   # Which OSM layers need to be fetched?
   needed_sources <- unique(vapply(features, function(f) {
     def <- LAYER_DEFS[[f]]
@@ -223,8 +223,11 @@ getOsmFeatures <- function(bb, features) {
   }, character(1)))
   needed_sources <- needed_sources[!is.na(needed_sources)]
   needed_sources <- intersect(needed_sources, c("lines", "multipolygons", "points"))
-
-  # Fetch each source once
+  
+  # Fetch each source once.
+  # clipsrc clips at the GDAL/OGR level and is fast, but some server
+  # GDAL builds fail on it silently. If it errors, fall back to
+  # reading the full layer and cropping in R with sf::st_crop.
   raw <- list()
   for (src in needed_sources) {
     raw[[src]] <- tryCatch(
@@ -236,10 +239,23 @@ getOsmFeatures <- function(bb, features) {
         boundary_type      = "clipsrc",
         quiet              = TRUE
       ),
-      error = function(e) NULL
+      error = function(e) {
+        tryCatch(
+          suppressWarnings(sf::st_crop(
+            osmextract::oe_get(
+              place              = bbox_sf,
+              layer              = src,
+              download_directory = cache_dir,
+              quiet              = TRUE
+            ),
+            bbox_sf
+          )),
+          error = function(e2) NULL
+        )
+      }
     )
   }
-
+  
   # Extract each requested feature using its filter function
   result <- list()
   for (f in features) {
