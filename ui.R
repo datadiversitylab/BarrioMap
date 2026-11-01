@@ -27,6 +27,18 @@ ui <- navbarPage(
     shinybusy::add_busy_spinner(spin = "dots", timeout = 300, height = "20px", width = "20px"),
 
     tags$head(
+      tags$meta(name = "viewport", content = "width=device-width, initial-scale=1"),
+      # Phones and small tablets: only Location is open at the start, so the map is not buried under the controls
+      tags$script(HTML("
+        $(function () {
+          if (window.matchMedia('(max-width: 991.98px)').matches) {
+            ['#sec-info', '#sec-page', '#sec-layers'].forEach(function (id) {
+              $(id).removeClass('show');
+              $('[data-target=\"' + id + '\"]').attr('aria-expanded', 'false');
+            });
+          }
+        });
+      ")),
       tags$script(defer = NA,
         src = "https://umami.datadiversitylab.synology.me/script.js",
         `data-website-id` = "543cffef-a100-47af-9dd9-2cf39517077b",
@@ -166,6 +178,33 @@ ui <- navbarPage(
           width:60px; height:60px; border-radius:50%; background:#c8e6c9;
           display:flex; align-items:center; justify-content:center;
           font-size:18px; font-weight:700; color:#1a5c3a; flex-shrink:0;
+        }
+
+        /* Phones and small tablets: the map on top, the controls below, and the page scrolls */
+        @media (max-width: 991.98px) {
+          .navbar { padding: 4px 10px; flex-wrap: nowrap; }
+          .navbar .container-fluid { flex-wrap: nowrap; padding: 0; }
+          .navbar-toggler, .navbar-toggle { display: none !important; }
+          .navbar-collapse { display: flex !important; flex-basis: auto; width: auto; padding: 0; margin-left: 8px; }
+          .navbar-nav { flex-direction: row !important; flex-wrap: nowrap; margin: 0; }
+          .navbar-nav > li > a, .navbar-nav .nav-link { padding: 8px 10px; white-space: nowrap; }
+
+          .bm-map-wrapper { height: auto; overflow: visible; }
+          .bm-layout { flex-direction: column; height: auto; overflow: visible; }
+          .bm-main { order: -1; flex: none; height: 52vh; min-height: 300px; }
+          .bm-sidebar { width: 100%; min-width: 0; height: auto; overflow: visible; border-right: 0; box-shadow: none; }
+          .bm-header { padding: 12px 14px 10px; }
+          .bm-section-header { padding: 13px 14px; }
+          .bm-section-title { font-size: 13px; }
+
+          /* 16px keeps iPhones from zooming into a field */
+          .bm-sidebar .form-control, .bm-sidebar select, .bm-sidebar select option,
+          .bm-sidebar .selectize-input, .bm-sidebar .selectize-input *,
+          .bm-sidebar input[type=number], .bm-sidebar input[type=text], .bm-sidebar textarea { font-size: 16px !important; }
+          .form-group label { font-size: 13px; }
+          .bm-hint { font-size: 12px; }
+          .bm-suggestion { padding: 10px 12px; font-size: 14px; }
+          .bm-sidebar .btn { min-height: 42px; }
         }
       "))
     ),

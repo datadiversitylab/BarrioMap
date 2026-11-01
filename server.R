@@ -24,11 +24,43 @@ nominatim_suggest <- function(q, limit = 5) {
   tryCatch(jsonlite::fromJSON(url, simplifyVector = TRUE), error = function(e) NULL)
 }
 
+# Usage counter, kept in a small file so it survives app restarts.
+# Set BARRIOMAP_DATA to a folder that persists (the default is a data folder next to the app).
+COUNTER_FILE <- file.path(Sys.getenv("BARRIOMAP_DATA", unset = "data"), "counter.json")
+
+writeCounter <- function(x) {
+  dir.create(dirname(COUNTER_FILE), showWarnings = FALSE, recursive = TRUE)
+  tmp <- paste0(COUNTER_FILE, ".tmp")
+  writeLines(jsonlite::toJSON(x, auto_unbox = TRUE), tmp)
+  file.rename(tmp, COUNTER_FILE)
+}
+
+readCounter <- function() {
+  x <- if (file.exists(COUNTER_FILE)) tryCatch(jsonlite::fromJSON(COUNTER_FILE), error = function(e) NULL)
+  if (is.null(x$count) || is.null(x$since)) {
+    x <- list(count = 0, since = format(Sys.Date(), "%Y-%m-%d"))
+    try(writeCounter(x), silent = TRUE)
+  }
+  x
+}
+
+getMapCount     <- function() readCounter()$count
+getCounterSince <- function() readCounter()$since
+
+incrementMapCount <- function() {
+  x <- readCounter()
+  x$count <- x$count + 1
+  try(writeCounter(x), silent = TRUE)
+}
+
 server <- function(input, output, session) {
 
   # -----------------------------------------------------------
   # Reactive state
   # -----------------------------------------------------------
+
+  # Changes after each map so the gallery count refreshes
+  counter_tick <- reactiveVal(0)
 
   rv <- reactiveValues(
     latitude         = 32.2540,
@@ -540,14 +572,17 @@ server <- function(input, output, session) {
   # -----------------------------------------------------------
 
   output$gallery_ui <- renderUI({
+    counter_tick()
     gallery <- getGallery()
     count   <- getMapCount()
+    since   <- sub(" 0", " ", format(as.Date(getCounterSince()), "%B %d, %Y"))
 
     stat_box <- tags$div(
       style = "text-align:center;padding:20px 0 10px;",
       tags$div(style = "font-size:2.5em;font-weight:800;color:#1a5c3a;",
                format(count, big.mark = ",")),
-      tags$div(style = "font-size:14px;color:#666;", "maps generated with BarrioMap")
+      tags$div(style = "font-size:14px;color:#666;",
+               paste0("maps generated with BarrioMap since ", since))
     )
 
     if (length(gallery) == 0)
@@ -978,6 +1013,7 @@ server <- function(input, output, session) {
         display_zoom = min(as.integer(input$map_zoom %||% 14), 16)
       ))
       incrementMapCount()
+      counter_tick(counter_tick() + 1)
       if (isTRUE(input$share_to_gallery))
         addToGallery(map_code, rv$latitude, rv$longitude, rv$scale,
                      format(Sys.Date(), "%Y-%m-%d"))
